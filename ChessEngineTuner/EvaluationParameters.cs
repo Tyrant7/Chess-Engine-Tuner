@@ -36,11 +36,13 @@ namespace ChessEngineTuner
 
         public void WriteToFile(string path)
         {
+            // TODO: Write in JSON format
             throw new NotImplementedException();
         }
 
         public void ReadFromFile(string path)
         {
+            // TODO: Readback and initialize
             throw new NotImplementedException();
         }
     }

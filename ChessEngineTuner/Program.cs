@@ -58,11 +58,7 @@ namespace ChessEngineTuner
 
             for (int i = 0; i < matches; i++)
             {
-                // TODO: Actually assign the weights
-                // Read weights from eval file path in 2 unique Evaluation parameter objects
-                // Make slight changes to each
-                // Write back, one into file A and other into file B
-
+                InitializeWeights();
                 Process cutechess = CreateProcess();
                 MatchResult result = RunMatch(cutechess);
 
@@ -71,14 +67,14 @@ namespace ChessEngineTuner
                 {
                     case MatchResult.BotAWins:
                         Console.WriteLine("Bot A wins");
-                        winnerFile = "A-" + Settings.EvalFileName;
+                        winnerFile = Settings.EvalFilePathA;
                         break;
                     case MatchResult.BotBWins:
-                        winnerFile = "B-" + Settings.EvalFileName;
+                        winnerFile = Settings.EvalFilePathB;
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Draw");
-                        winnerFile = Settings.EvalFileName; // No prepended A or B for a draw
+                        winnerFile = Settings.EvalFileName; // No prepended A or B for a draw, just use the default file
                         break;
                     case MatchResult.Cancelled:
                         Console.WriteLine("Match was cancelled. Terminating process...");
@@ -92,6 +88,23 @@ namespace ChessEngineTuner
                 CopyParameters(winnerPath, Settings.EvalFilePath);
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.EvalFilePath);
+        }
+
+        /// <summary>
+        /// Copies the weights files into separate A and B files with slight adjustments for testing.
+        /// </summary>
+        private static void InitializeWeights()
+        {
+            // Initialize our two sets of weights
+            EvaluationParameters parametersA = new(), parametersB = new();
+            parametersA.ReadFromFile(Settings.EvalFileName);
+            parametersB.ReadFromFile(Settings.EvalFileName);
+
+            // TODO: Make slight changes to each
+
+            // Write back, one into file A and other into file B
+            parametersA.WriteToFile(Settings.EvalFilePathA);
+            parametersB.WriteToFile(Settings.EvalFilePathB);
         }
 
         /// <summary>

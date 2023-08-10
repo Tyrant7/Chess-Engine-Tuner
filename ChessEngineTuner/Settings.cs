@@ -39,11 +39,16 @@ namespace ChessEngineTuner
         /// <summary>
         /// The full path of your evaluation weights.
         /// </summary>
-        public static string EvalFilePath => Path.Combine(EngineDirectory, EvalFilePath);
+        public static string EvalFilePath => Path.Combine(EngineDirectory, EvalFileName);
         /// <summary>
         /// The full path of your search weights.
         /// </summary>
-        public static string SearchFilePath => Path.Combine(EngineDirectory, EvalFilePath);
+        public static string SearchFilePath => Path.Combine(EngineDirectory, SearchFileName);
+
+        public static string EvalFilePathA => Path.Combine(EngineDirectory, "A-" + EvalFileName);
+        public static string SearchFilePathA => Path.Combine(EngineDirectory, "A-" + SearchFileName);
+        public static string EvalFilePathB => Path.Combine(EngineDirectory, "B-" + EvalFileName);
+        public static string SearchFilePathB => Path.Combine(EngineDirectory, "B-" + SearchFileName);
 
         public const int DefaultMaxMatches = 1000;
     }
