@@ -15,11 +15,9 @@ namespace ChessEngineTuner
         {
             Test = 3;
             LMR = 7;
-            GamePhase = new int[6];
         }
 
         public int Test;
-        public Parameter<int> LMR;
-        public Parameter<int[]> GamePhase;
+        public Parameter LMR;
     }
 }

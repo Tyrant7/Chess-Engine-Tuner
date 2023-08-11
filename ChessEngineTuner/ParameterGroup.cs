@@ -36,21 +36,21 @@ namespace ChessEngineTuner
             return JsonSerializer.Deserialize<ParameterGroup>(jsonData, Options);
         }
 
-        public struct Parameter<T>
+        public struct Parameter
         {
-            public readonly T Value;
+            public readonly int Value;
             public readonly int MinDelta;
             public readonly int MaxDelta;
 
-            public Parameter(T val)
+            public Parameter(int val)
             {
                 Value = val;
                 MinDelta = 1;
                 MaxDelta = 5;
             }
 
-            public static implicit operator T(Parameter<T> parameter) => parameter.Value;
-            public static implicit operator Parameter<T>(T value) => new Parameter<T>(value);
+            public static implicit operator int(Parameter parameter) => parameter.Value;
+            public static implicit operator Parameter(int value) => new Parameter(value);
         }
     }
 }
