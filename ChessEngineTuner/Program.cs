@@ -106,19 +106,24 @@ namespace ChessEngineTuner
         {
             // Initialize our two sets of weights
             ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
-            // ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
 
             // TODO: Make slight changes to each
             int A = 8000;
 
-            foreach (ParameterGroup parameter in parameters)
-            {
+            // foreach (ParameterGroup parameter in parameters)
+            // {
+            //     if (match == A + 1)
+            //     {
 
-            }
-            if (match == A + 1)
-            {
+            //     }
+            // }
 
-            }
+            parameters.WriteToFile(Settings.EvalFilePath);
+
+            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+
+            // Update Value with delta
 
             // Write back, one into file A and other into file B
             parametersA.WriteToFile(Settings.EvalFilePathA);

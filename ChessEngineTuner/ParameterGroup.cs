@@ -51,7 +51,7 @@ namespace ChessEngineTuner
             public double c;
             public double corr;
 
-            public Parameter(int _Value, int _Min_Value, int _Max_Value, double _a, double _c)
+            public Parameter(int _Value, int _Min_Value, int _Max_Value)
             {
                 Value = _Value;
                 Temp = _Value;
@@ -60,14 +60,29 @@ namespace ChessEngineTuner
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
-                a = _a;
-                c0 = _c;
-                c = _c;
+                a = 30.0;
+                c0 = 200.0;
+                c = 200.0;
+                corr = 1.0;
+            }
+
+            public Parameter(int _Value)
+            {
+                Value = _Value;
+                Temp = _Value;
+                Min_Value = -1000000;
+                Max_Value = 1000000;
+                Progress_1 = 0.0;
+                Progress_2 = 0.0;
+                R = -1.0;
+                a = 30.0;
+                c0 = 200.0;
+                c = 200.0;
                 corr = 1.0;
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;
-            // public static implicit operator Parameter(_value, _min, _max, _a, _c) => new(_value, _min, _max, _a, _c);
+            public static implicit operator Parameter(int _value) => new(_value);
         }
     }
 }
