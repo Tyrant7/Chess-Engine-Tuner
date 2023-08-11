@@ -82,24 +82,24 @@ namespace ChessEngineTuner
             // Required definition for deserialization
             public Parameter() { }
 
-            public Parameter(int Value, int MinDelta, int MaxDelta, int MinValue, int MaxValue)
+            public Parameter(int value, int minDelta, int maxDelta, int minValue, int maxValue)
             {
-                this.Value = Value;
-                this.MinDelta = MinDelta;
-                this.MaxDelta = MaxDelta;
+                Value = value;
+                MinDelta = minDelta;
+                MaxDelta = maxDelta;
 
-                this.MinValue = MinValue;
-                this.MaxValue = MaxValue;
+                MinValue = minValue;
+                MaxValue = maxValue;
             }
 
-            public Parameter(int Value)
+            public Parameter(int value)
             {
-                this.Value = Value;
+                Value = value;
                 MinDelta = 0;
-                MaxDelta = Math.Max(Value / 10, 1);
+                MaxDelta = Math.Max(value / 10, 1);
 
                 MinValue = 1;
-                MaxValue = Math.Max(Value * 3, 10);
+                MaxValue = Math.Max(value * 3, 10);
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;
