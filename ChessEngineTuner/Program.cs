@@ -53,7 +53,7 @@ namespace ChessEngineTuner
             {
                 // Write an empty set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
-                parameters.WriteToFile(Settings.FilePath);
+                parameters.WriteToFile(Settings.FilePath, false);
             }
 
             for (int i = 0; i < matches; i++)
