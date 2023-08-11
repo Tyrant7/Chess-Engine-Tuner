@@ -82,10 +82,6 @@ namespace ChessEngineTuner
                 }
 
                 Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
-
-                // Copy the winner's weight data to be used as the base for the next iteration
-                string winnerPath = Path.Combine(Settings.EngineDirectory, winnerFile);
-                CopyParameters(winnerPath, Settings.FilePath);
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
         }
@@ -177,18 +173,6 @@ namespace ChessEngineTuner
                 }
             }
             return MatchResult.Cancelled;
-        }
-
-        private static void CopyParameters(string fromPath, string toPath)
-        {
-            if (!File.Exists(fromPath))
-            {
-                Console.WriteLine("Could not copy weights from winner because the file was missing!");
-                return;
-            }
-
-            // TODO: copy Values from winner to
-            //
         }
     }
 }
