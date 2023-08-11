@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,7 +22,8 @@ namespace ChessEngineTuner
         public void WriteToFile(string path)
         {
             // Write parameter group data in JSON format
-            string myJsonData = JsonSerializer.Serialize(this, Options);
+            RawParameterGroup rawParams = new RawParameterGroup(this);
+            string myJsonData = JsonSerializer.Serialize(rawParams, Options);
             File.WriteAllText(path, myJsonData);
         }
 

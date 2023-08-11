@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -31,6 +32,32 @@ namespace ChessEngineTuner
         PSTs
         Tempo - tentative
     */
+
+    public struct RawParameterGroup
+    {
+        public RawParameterGroup(ParameterGroup group)
+        {
+            AWWiden         = group.AWWiden;
+            AWSize          = group.AWSize;
+            RFPMargin       = group.RFPMargin;
+            NMP_R           = group.NMP_R;
+            NMPDepthCoef    = group.NMPDepthCoef;
+            EFPMargin       = group.EFPMargin;
+            LMR_R           = group.LMR_R;
+            LMRDepthMargin  = group.LMRDepthMargin;
+            LMRTriedMargin  = group.LMRTriedMargin;
+        }
+
+        public int AWWiden;
+        public int AWSize;
+        public int RFPMargin;
+        public int NMP_R;
+        public int NMPDepthCoef;
+        public int EFPMargin;
+        public int LMR_R;
+        public int LMRDepthMargin;
+        public int LMRTriedMargin;
+    }
 
     public partial struct ParameterGroup
     {
