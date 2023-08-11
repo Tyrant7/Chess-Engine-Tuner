@@ -56,19 +56,9 @@ namespace ChessEngineTuner
                 parameters.WriteToFile(Settings.FilePath, false);
             }
 
-            // int iterations = 10000, A = 2000, iter = 0;
-            // ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.FilePath);
-
-            // while (true)
-            // {
-            //     if (iter++ > iterations) { break; }
-
-            //     foreach (ParameterGroup.Parameter p in parameters)
-            // }
-
             for (int i = 0; i < matches; i++)
             {
-                InitializeWeights(i);
+                InitializeWeights(i, matches);
                 Process cutechess = CreateProcess();
                 (MatchResult result, int score) = RunMatch(cutechess);
 
@@ -91,6 +81,16 @@ namespace ChessEngineTuner
                         return;
                 }
 
+                ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
+                ParameterGroup.Parameter[] p = parameter_group.GetParameters();
+                for (int j = 0; j < p.Length; j++)
+                {
+                    p[j].Value += (int)(p[j].a * score / (p[j].c * p[j].delta));
+                    p[j].Value = Math.Min(p[j].Max_Value,
+                                       Math.Max(p[j].Min_Value,
+                                                p[j].Value));
+                }
+
                 Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
@@ -99,7 +99,7 @@ namespace ChessEngineTuner
         /// <summary>
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
-        private static void InitializeWeights(int match)
+        private static void InitializeWeights(int match, int matches)
         {
             // Initialize our two sets of weights
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
@@ -107,7 +107,6 @@ namespace ChessEngineTuner
 
             // TODO: Make slight changes to each
             int A = 1;
-            int iterations = 200;
 
             ParameterGroup.Parameter[] p = parameter_group.GetParameters();
             ParameterGroup.Parameter[] pA = parametersA.GetParameters();
@@ -129,7 +128,7 @@ namespace ChessEngineTuner
                     {
                         p[i].corr = Math.Min(1.25,
                                              Math.Max(0.8,
-                                                      -2.0 * A / (iterations * Math.Log(p[i].R))));
+                                                      -2.0 * A / (matches * Math.Log(p[i].R))));
                     }
                     if (p[i].R <= 1.0e-6) { p[i].corr = 0.8; }
                     if (p[i].R >= 0.999999) { p[i].corr = 1.25; }
@@ -140,18 +139,18 @@ namespace ChessEngineTuner
                     p[i].Temp = p[i].Value;
                 }
 
-                p[i].c = p[i].c0 * Math.Exp(2.0 * (match + 1) / iterations) / (match + 1);
-                int delta = new Random().Next(2) * 2 - 1;
+                p[i].c = p[i].c0 * Math.Exp(2.0 * (match + 1) / matches) / (match + 1);
+                p[i].delta = new Random().Next(2) * 2 - 1;
 
                 pA[i].Value = Math.Min(p[i].Max_Value,
-                                       Math.Min(p[i].Min_Value,
-                                                (int)(p[i].Value + p[i].c * delta)));
+                                       Math.Max(p[i].Min_Value,
+                                                (int)(p[i].Value + p[i].c * p[i].delta)));
                 pB[i].Value = Math.Min(p[i].Max_Value,
-                                       Math.Min(p[i].Min_Value,
-                                                (int)(p[i].Value - p[i].c * delta)));
+                                       Math.Max(p[i].Min_Value,
+                                                (int)(p[i].Value - p[i].c * p[i].delta)));
             }
 
-            parameter_group.WriteToFile(Settings.FilePath);
+            parameter_group.WriteToFile(Settings.FilePath, false);
 
             // Write back, one into file A and other into file B
             parametersA.WriteToFile(Settings.FilePathA);

@@ -70,6 +70,7 @@ namespace ChessEngineTuner
             public int Temp;
             public int Min_Value;
             public int Max_Value;
+            public int delta;
             public double Progress_1;
             public double Progress_2;
             public double R;
@@ -84,6 +85,7 @@ namespace ChessEngineTuner
                 Temp = _Value;
                 Min_Value = _Min_Value;
                 Max_Value = _Max_Value;
+                delta = 0;
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
@@ -99,6 +101,7 @@ namespace ChessEngineTuner
                 Temp = _Value;
                 Min_Value = -1000000;
                 Max_Value = 1000000;
+                delta = 0;
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
