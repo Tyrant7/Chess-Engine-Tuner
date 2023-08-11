@@ -1,3 +1,6 @@
 {
-    "dotnet.defaultSolution": "ChessEngineTuner.sln"
+    "dotnet.defaultSolution": "ChessEngineTuner.sln",
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "main"
+    ]
 }

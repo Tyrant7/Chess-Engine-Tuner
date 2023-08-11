@@ -56,19 +56,9 @@ namespace ChessEngineTuner
                 parameters.WriteToFile(Settings.FilePath, false);
             }
 
-            // int iterations = 10000, A = 2000, iter = 0;
-            // ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.FilePath);
-
-            // while (true)
-            // {
-            //     if (iter++ > iterations) { break; }
-
-            //     foreach (ParameterGroup.Parameter p in parameters)
-            // }
-
             for (int i = 0; i < matches; i++)
             {
-                InitializeWeights(i);
+                InitializeWeights(i, matches);
                 Process cutechess = CreateProcess();
                 (MatchResult result, int score) = RunMatch(cutechess);
 
@@ -91,6 +81,16 @@ namespace ChessEngineTuner
                         return;
                 }
 
+                ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
+                ParameterGroup.Parameter[] p = parameter_group.GetParameters();
+                for (int j = 0; j < p.Length; j++)
+                {
+                    p[j].Value += (int)(p[j].a * score / (p[j].c * p[j].delta));
+                    p[j].Value = Math.Min(p[j].Max_Value,
+                                       Math.Max(p[j].Min_Value,
+                                                p[j].Value));
+                }
+
                 Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
@@ -99,28 +99,58 @@ namespace ChessEngineTuner
         /// <summary>
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
-        private static void InitializeWeights(int match)
+        private static void InitializeWeights(int match, int matches)
         {
             // Initialize our two sets of weights
-            ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.FilePath);
+            ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
+            ParameterGroup parametersA = new(), parametersB = new();
 
             // TODO: Make slight changes to each
-            int A = 8000;
+            int A = 1;
 
-            // foreach (ParameterGroup parameter in parameters)
-            // {
-            //     if (match == A + 1)
-            //     {
+            ParameterGroup.Parameter[] p = parameter_group.GetParameters();
+            ParameterGroup.Parameter[] pA = parametersA.GetParameters();
+            ParameterGroup.Parameter[] pB = parametersB.GetParameters();
+            for (int i = 0; i < p.Length; i++)
+            {
+                if (match == A)
+                {
+                    p[i].Progress_1 = Math.Abs(p[i].Value - p[i].Temp);
+                    p[i].Temp = p[i].Value;
+                }
 
-            //     }
-            // }
+                if (match > A && match % A == 0)
+                {
+                    p[i].Progress_2 = Math.Abs(p[i].Value - p[i].Temp);
+                    p[i].R = p[i].Progress_1 > 0.001 ? p[i].Progress_2 / (p[i].corr * p[i].Progress_1) : -1.0;
 
-            parameters.WriteToFile(Settings.FilePath, false);
+                    if (p[i].R > 1.0e-6 && p[i].R < 0.999999)
+                    {
+                        p[i].corr = Math.Min(1.25,
+                                             Math.Max(0.8,
+                                                      -2.0 * A / (matches * Math.Log(p[i].R))));
+                    }
+                    if (p[i].R <= 1.0e-6) { p[i].corr = 0.8; }
+                    if (p[i].R >= 0.999999) { p[i].corr = 1.25; }
+                    if (p[i].R == -1.0) { p[i].corr = 1.0; }
 
-            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
-            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
+                    p[i].a *= p[i].corr;
+                    p[i].Progress_1 = p[i].Progress_2;
+                    p[i].Temp = p[i].Value;
+                }
 
-            // Update Value with delta
+                p[i].c = p[i].c0 * Math.Exp(2.0 * (match + 1) / matches) / (match + 1);
+                p[i].delta = new Random().Next(2) * 2 - 1;
+
+                pA[i].Value = Math.Min(p[i].Max_Value,
+                                       Math.Max(p[i].Min_Value,
+                                                (int)(p[i].Value + p[i].c * p[i].delta)));
+                pB[i].Value = Math.Min(p[i].Max_Value,
+                                       Math.Max(p[i].Min_Value,
+                                                (int)(p[i].Value - p[i].c * p[i].delta)));
+            }
+
+            parameter_group.WriteToFile(Settings.FilePath, false);
 
             // Write back, one into file A and other into file B
             parametersA.WriteToFile(Settings.FilePathA);
