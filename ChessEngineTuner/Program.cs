@@ -12,6 +12,11 @@ namespace ChessEngineTuner
 
         public static void Main(string[] args)
         {
+            foreach (ParameterGroup.Parameter p in new ParameterGroup().GetParameters())
+            {
+                Console.WriteLine(p.Value);
+            }
+
             if (args.Length == 0)
             {
                 BeginTuning(Settings.DefaultMaxMatches, false);
@@ -115,7 +120,7 @@ namespace ChessEngineTuner
             //     }
             // }
 
-            parameters.WriteToFile(Settings.FilePath);
+            parameters.WriteToFile(Settings.FilePath, false);
 
             ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
