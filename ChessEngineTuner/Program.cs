@@ -52,15 +52,24 @@ namespace ChessEngineTuner
             if (tuneFromScratch || !File.Exists(Settings.EvalFilePath))
             {
                 // Write an empty set of parameters to the evaluation file
-                ParameterGroup parameters = new ParameterGroup();
-                parameters.WriteToFile(Settings.EvalFilePath);
+                new ParameterGroup().WriteToFile(Settings.EvalFilePath);
             }
+
+            // int iterations = 10000, A = 2000, iter = 0;
+            // ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+
+            // while (true)
+            // {
+            //     if (iter++ > iterations) { break; }
+
+            //     foreach (ParameterGroup.Parameter p in parameters)
+            // }
 
             for (int i = 0; i < matches; i++)
             {
-                InitializeWeights();
+                InitializeWeights(i);
                 Process cutechess = CreateProcess();
-                MatchResult result = RunMatch(cutechess);
+                (MatchResult result, int score) = RunMatch(cutechess);
 
                 string winnerFile = "";
                 switch (result)
@@ -93,13 +102,23 @@ namespace ChessEngineTuner
         /// <summary>
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
-        private static void InitializeWeights()
+        private static void InitializeWeights(int match)
         {
             // Initialize our two sets of weights
-            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
-            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            // ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
 
             // TODO: Make slight changes to each
+            int A = 8000;
+
+            foreach (ParameterGroup parameter in parameters)
+            {
+
+            }
+            if (match == A + 1)
+            {
+
+            }
 
             // Write back, one into file A and other into file B
             parametersA.WriteToFile(Settings.EvalFilePathA);
@@ -130,7 +149,8 @@ namespace ChessEngineTuner
             };
 
             // Kill cutechess once the program exits
-            AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs e) => {
+            AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs e) =>
+            {
                 Console.WriteLine("Killing cutechess...");
                 cutechess.Kill(true);
             };
@@ -143,7 +163,7 @@ namespace ChessEngineTuner
         /// </summary>
         /// <param name="cutechess">The process to track the match of.</param>
         /// <returns>The result of the match.</returns>
-        private static MatchResult RunMatch(Process cutechess)
+        private static (MatchResult, int) RunMatch(Process cutechess)
         {
             cutechess.Start();
 
@@ -168,15 +188,15 @@ namespace ChessEngineTuner
                     {
                         int sumStats = int.Parse(tokens[5]) - int.Parse(tokens[7]);
                         if (sumStats > 0)
-                            return MatchResult.BotAWins;
+                            return (MatchResult.BotAWins, sumStats);
                         else if (sumStats < 0)
-                            return MatchResult.BotBWins;
+                            return (MatchResult.BotBWins, sumStats);
                         else
-                            return MatchResult.Draw;
+                            return (MatchResult.Draw, sumStats);
                     }
                 }
             }
-            return MatchResult.Cancelled;
+            return (MatchResult.Cancelled, 0);
         }
 
         private static void CopyParameters(string fromPath, string toPath)

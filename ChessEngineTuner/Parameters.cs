@@ -14,7 +14,7 @@ namespace ChessEngineTuner
         public ParameterGroup()
         {
             Test = 3;
-            LMR = 7;
+            LMR = new Parameter(5, 0, 10, 30, 200);
         }
 
         public int Test;

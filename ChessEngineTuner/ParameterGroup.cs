@@ -38,19 +38,35 @@ namespace ChessEngineTuner
 
         public struct Parameter
         {
-            public readonly int Value;
-            public readonly int MinDelta;
-            public readonly int MaxDelta;
+            public int Value;
+            public int Temp;
+            public int Min_Value;
+            public int Max_Value;
+            public double Progress_1;
+            public double Progress_2;
+            public double R;
+            public double a;
+            public double c0;
+            public double c;
+            public double corr;
 
-            public Parameter(int val)
+            public Parameter(int _Value, int _Min_Value, int _Max_Value, double _a, double _c)
             {
-                Value = val;
-                MinDelta = 1;
-                MaxDelta = 5;
+                Value = _Value;
+                Temp = _Value;
+                Min_Value = _Min_Value;
+                Max_Value = _Max_Value;
+                Progress_1 = 0.0;
+                Progress_2 = 0.0;
+                R = -1.0;
+                a = _a;
+                c0 = _c;
+                c = _c;
+                corr = 1.0;
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;
-            public static implicit operator Parameter(int value) => new Parameter(value);
+            // public static implicit operator Parameter(_value, _min, _max, _a, _c) => new(_value, _min, _max, _a, _c);
         }
     }
 }
