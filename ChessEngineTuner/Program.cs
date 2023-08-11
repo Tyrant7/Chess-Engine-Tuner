@@ -57,7 +57,7 @@ namespace ChessEngineTuner
             }
 
             // int iterations = 10000, A = 2000, iter = 0;
-            // ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            // ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.FilePath);
 
             // while (true)
             // {
@@ -102,7 +102,7 @@ namespace ChessEngineTuner
         private static void InitializeWeights(int match)
         {
             // Initialize our two sets of weights
-            ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            ParameterGroup parameters = ParameterGroup.ReadFromFile(Settings.FilePath);
 
             // TODO: Make slight changes to each
             int A = 8000;
@@ -115,10 +115,10 @@ namespace ChessEngineTuner
             //     }
             // }
 
-            parameters.WriteToFile(Settings.EvalFilePath);
+            parameters.WriteToFile(Settings.FilePath);
 
-            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
-            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
+            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
 
             // Update Value with delta
 
@@ -198,7 +198,7 @@ namespace ChessEngineTuner
                     }
                 }
             }
-            return MatchResult.Cancelled;
+            return (MatchResult.Cancelled, 0);
         }
     }
 }
