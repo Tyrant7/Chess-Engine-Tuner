@@ -18,26 +18,21 @@ namespace ChessEngineTuner
         /// The name of the file containing your evaluation weights. Located in your engine directory.
         /// Additional files preprended with A and B be created for each bot respectively.
         /// </summary>
-        private static readonly string EvalFileName = "Evaluation.weights";
-        /// <summary>
-        /// The name of the file containing your search weights. Located in your engine directory.
-        /// Additional files preprended with A and B be created for each bot respectively.
-        /// </summary>
-        private static readonly string SearchFileName = "Search.weights";
+        private static readonly string FileName = "Evaluation.weights";
 
         /// <summary>
         /// The full path of your evaluation weights.
         /// </summary>
-        public static string EvalFilePath => Path.Combine(EngineDirectory, EvalFileName);
-        /// <summary>
-        /// The full path of your search weights.
-        /// </summary>
-        public static string SearchFilePath => Path.Combine(EngineDirectory, SearchFileName);
+        public static string FilePath => Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
-        public static string EvalFilePathA => Path.Combine(EngineDirectory, "A-" + EvalFileName);
-        public static string SearchFilePathA => Path.Combine(EngineDirectory, "A-" + SearchFileName);
-        public static string EvalFilePathB => Path.Combine(EngineDirectory, "B-" + EvalFileName);
-        public static string SearchFilePathB => Path.Combine(EngineDirectory, "B-" + SearchFileName);
+        /// <summary>
+        /// The file path for Bot A. Uses the engine directory.
+        /// </summary>
+        public static string FilePathA => Path.Combine(EngineDirectory, "A-" + FileName);
+        /// <summary>
+        /// The file path for Bot A. Uses the engine directory.
+        /// </summary>
+        public static string FilePathB => Path.Combine(EngineDirectory, "B-" + FileName);
 
         public const int DefaultMaxMatches = 1000;
     }

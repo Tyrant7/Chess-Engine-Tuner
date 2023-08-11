@@ -49,11 +49,11 @@ namespace ChessEngineTuner
 
             Console.WriteLine("Starting tuning with {0} max matches...", matches);
 
-            if (tuneFromScratch || !File.Exists(Settings.EvalFilePath))
+            if (tuneFromScratch || !File.Exists(Settings.FilePath))
             {
                 // Write an empty set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
-                parameters.WriteToFile(Settings.EvalFilePath);
+                parameters.WriteToFile(Settings.FilePath);
             }
 
             for (int i = 0; i < matches; i++)
@@ -67,14 +67,14 @@ namespace ChessEngineTuner
                 {
                     case MatchResult.BotAWins:
                         Console.WriteLine("Bot A wins");
-                        winnerFile = Settings.EvalFilePathA;
+                        winnerFile = Settings.FilePathA;
                         break;
                     case MatchResult.BotBWins:
-                        winnerFile = Settings.EvalFilePathB;
+                        winnerFile = Settings.FilePathB;
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Draw");
-                        winnerFile = Settings.EvalFilePath; // No prepended A or B for a draw, just use the default file
+                        winnerFile = Settings.FilePath; // No prepended A or B for a draw, just use the default file
                         break;
                     case MatchResult.Cancelled:
                         Console.WriteLine("Match was cancelled. Terminating process...");
@@ -85,9 +85,9 @@ namespace ChessEngineTuner
 
                 // Copy the winner's weight data to be used as the base for the next iteration
                 string winnerPath = Path.Combine(Settings.EngineDirectory, winnerFile);
-                CopyParameters(winnerPath, Settings.EvalFilePath);
+                CopyParameters(winnerPath, Settings.FilePath);
             }
-            Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.EvalFilePath);
+            Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
         }
 
         /// <summary>
@@ -96,14 +96,14 @@ namespace ChessEngineTuner
         private static void InitializeWeights()
         {
             // Initialize our two sets of weights
-            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
-            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
+            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
 
             // TODO: Make slight changes to each
 
             // Write back, one into file A and other into file B
-            parametersA.WriteToFile(Settings.EvalFilePathA);
-            parametersB.WriteToFile(Settings.EvalFilePathB);
+            parametersA.WriteToFile(Settings.FilePathA);
+            parametersB.WriteToFile(Settings.FilePathB);
         }
 
         /// <summary>
@@ -184,15 +184,11 @@ namespace ChessEngineTuner
             if (!File.Exists(fromPath))
             {
                 Console.WriteLine("Could not copy weights from winner because the file was missing!");
-                Console.WriteLine("Rolling winner's file back to previously saved version.");
-
-                // Copy the other way in hopes to restore the winner's file back to the original weights
-                if (File.Exists(toPath))
-                    File.Copy(toPath, fromPath, true);
-
                 return;
             }
-            File.Copy(fromPath, toPath, true);
+
+            // TODO: copy Values from winner to
+            //
         }
     }
 }
