@@ -18,7 +18,7 @@ namespace ChessEngineTuner
             }
             else if (args.Length > 0 && args[0].Contains("maxmatches"))
             {
-                bool fromScratch = (args.Length >= 2) && args[2].Contains("fromscratch");
+                bool fromScratch = args.Contains("fromscratch");
                 if (int.TryParse(args[1], out int matches))
                 {
                     BeginTuning(matches, fromScratch);
@@ -49,9 +49,16 @@ namespace ChessEngineTuner
 
             Console.WriteLine("Starting tuning with {0} max matches...", matches);
 
-            if (tuneFromScratch || !File.Exists(Settings.FilePath))
+            if (tuneFromScratch)
             {
-                // Write an empty set of parameters to the evaluation file
+                // Write a zeroed out set of parameters to the evaluation file
+                ParameterGroup parameters = new ParameterGroup();
+                parameters.ZeroOutParameters();
+                parameters.WriteToFile(Settings.FilePath, false);
+            }
+            else if (!File.Exists(Settings.FilePath))
+            {
+                // Write a fresh set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
                 parameters.WriteToFile(Settings.FilePath, false);
             }

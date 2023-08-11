@@ -48,6 +48,14 @@ namespace ChessEngineTuner
             return JsonSerializer.Deserialize<ParameterGroup>(jsonData, Options);
         }
 
+        public void ZeroOutParameters()
+        {
+            foreach (var param in Parameters)
+            {
+                Parameters[param.Key] = 0;
+            }
+        }
+
         public struct Parameter
         {
             public int Value;
