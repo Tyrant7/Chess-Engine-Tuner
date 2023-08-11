@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ChessEngineTuner
@@ -37,51 +34,34 @@ namespace ChessEngineTuner
     {
         public RawParameterGroup(ParameterGroup group)
         {
-            AWWiden         = group.AWWiden;
-            AWSize          = group.AWSize;
-            RFPMargin       = group.RFPMargin;
-            NMP_R           = group.NMP_R;
-            NMPDepthCoef    = group.NMPDepthCoef;
-            EFPMargin       = group.EFPMargin;
-            LMR_R           = group.LMR_R;
-            LMRDepthMargin  = group.LMRDepthMargin;
-            LMRTriedMargin  = group.LMRTriedMargin;
+            Parameters = new Dictionary<string, int>(group.Parameters.Count);
+            foreach (KeyValuePair<string, ParameterGroup.Parameter> par in group.Parameters)
+            {
+                Parameters.Add(par.Key, par.Value.Value);
+            }
         }
 
-        public int AWWiden;
-        public int AWSize;
-        public int RFPMargin;
-        public int NMP_R;
-        public int NMPDepthCoef;
-        public int EFPMargin;
-        public int LMR_R;
-        public int LMRDepthMargin;
-        public int LMRTriedMargin;
+        public Dictionary<string, int> Parameters;
     }
 
     public partial struct ParameterGroup
     {
         public ParameterGroup()
         {
-            AWWiden = 65;
-            AWSize = 20;
-            RFPMargin = 100;
-            NMP_R = 3;
-            NMPDepthCoef = 5;
-            EFPMargin = 120;
-            LMR_R = 3;
-            LMRDepthMargin = 3;
-            LMRTriedMargin = 8;
+            Parameters = new Dictionary<string, Parameter>
+            {
+                { "AWWiden",        65 },
+                { "AWSize",         20 },
+                { "RFPMargin",     100 },
+                { "NMP_R",           3 },
+                { "NMPDepthCoef",    5 },
+                { "EFPMargin",     120 },
+                { "LMR_R",           3 },
+                { "LMRDepthMargin",  3 },
+                { "LMRTriedMargin",  8 },
+            };
         }
 
-        public Parameter AWWiden;
-        public Parameter AWSize;
-        public Parameter RFPMargin;
-        public Parameter NMP_R;
-        public Parameter NMPDepthCoef;
-        public Parameter EFPMargin;
-        public Parameter LMR_R;
-        public Parameter LMRDepthMargin;
-        public Parameter LMRTriedMargin;
+        public Dictionary<string, Parameter> Parameters;
     }
 }

@@ -77,15 +77,19 @@ namespace ChessEngineTuner
                         return;
                 }
 
-                ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
-                ParameterGroup.Parameter[] p = parameter_group.GetParameters();
-                for (int j = 0; j < p.Length; j++)
-                {
-                    p[j].Value += (int)(p[j].a * score / (p[j].c * p[j].delta));
-                    p[j].Value = Math.Clamp(p[j].Value, p[j].Min_Value, p[j].Max_Value);
-                }
-
                 Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
+                cutechess.Kill();
+
+                // Update main parameter group to use next time based on winner
+                ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
+                var p = parameter_group.Parameters;
+                foreach (var param in p)
+                {
+                    p[param.Key] += (int)(p[param.Key].a * score / (p[param.Key].c * p[param.Key].delta));
+                    p[param.Key] = Math.Clamp(p[param.Key].Value, p[param.Key].Min_Value, p[param.Key].Max_Value);
+                }
+                parameter_group.WriteToFile(Settings.FilePath, false);
+
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
         }
@@ -99,43 +103,44 @@ namespace ChessEngineTuner
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersA = new(), parametersB = new();
 
-            // TODO: Make slight changes to each
-            int A = 3;
+            // Make slight changes to each
+            int A = 5000;
 
-            ParameterGroup.Parameter[] p = parameter_group.GetParameters();
-            ParameterGroup.Parameter[] pA = parametersA.GetParameters();
-            ParameterGroup.Parameter[] pB = parametersB.GetParameters();
-            for (int i = 0; i < p.Length; i++)
+
+            var pars = parameter_group.Parameters;
+            foreach (KeyValuePair<string, ParameterGroup.Parameter> par in pars)
             {
+                ParameterGroup.Parameter newParam = pars[par.Key];
                 if (match == A)
                 {
-                    p[i].Progress_1 = Math.Abs(p[i].Value - p[i].Temp);
-                    p[i].Temp = p[i].Value;
+                    newParam.Progress_1 = Math.Abs(newParam.Value - newParam.Temp);
+                    newParam.Temp = newParam.Value;
                 }
 
                 if (match > A && match % A == 0)
                 {
-                    p[i].Progress_2 = Math.Abs(p[i].Value - p[i].Temp);
-                    p[i].R = p[i].Progress_1 > 0.001 ? p[i].Progress_2 / (p[i].corr * p[i].Progress_1) : -1.0;
+                    newParam.Progress_2 = Math.Abs(newParam.Value - newParam.Temp);
+                    newParam.R = newParam.Progress_1 > 0.001 ? newParam.Progress_2 / (newParam.corr * newParam.Progress_1) : -1.0;
 
-                    if (p[i].R > 1.0e-6 && p[i].R < 0.999999)
+                    if (newParam.R > 1.0e-6 && newParam.R < 0.999999)
                     {
-                        p[i].corr = Math.Clamp(-2.0 * A / (matches * Math.Log(p[i].R)), 0.8, 1.25);
+                        newParam.corr = Math.Clamp(-2.0 * A / (matches * Math.Log(newParam.R)), 0.8, 1.25);
                     }
-                    if (p[i].R <= 1.0e-6) { p[i].corr = 0.8; }
-                    if (p[i].R >= 0.999999) { p[i].corr = 1.25; }
-                    if (p[i].R == -1.0) { p[i].corr = 1.0; }
+                    if (newParam.R <= 1.0e-6) { newParam.corr = 0.8; }
+                    if (newParam.R >= 0.999999) { newParam.corr = 1.25; }
+                    if (newParam.R == -1.0) { newParam.corr = 1.0; }
 
-                    p[i].a *= p[i].corr;
-                    p[i].Progress_1 = p[i].Progress_2;
-                    p[i].Temp = p[i].Value;
+                    newParam.a *= newParam.corr;
+                    newParam.Progress_1 = newParam.Progress_2;
+                    newParam.Temp = newParam.Value;
                 }
 
-                p[i].c = p[i].c0 * Math.Exp(2.0 * (match + 1) / matches) / (match + 1);
-                p[i].delta = new Random().Next(2) * 2 - 1;
+                newParam.c = newParam.c0 * Math.Exp(2.0 * (match + 1) / matches) / (match + 1);
+                newParam.delta = new Random().Next(2) * 2 - 1;
 
-                pA[i].Value = Math.Clamp((int)(p[i].Value + p[i].c * p[i].delta), p[i].Min_Value, p[i].Max_Value);
-                pB[i].Value = Math.Clamp((int)(p[i].Value - p[i].c * p[i].delta), p[i].Min_Value, p[i].Max_Value);
+                pars[par.Key] = newParam;
+                parametersA.Parameters[par.Key] = Math.Clamp((int)(newParam.Value + newParam.c * newParam.delta), newParam.Min_Value, newParam.Max_Value);
+                parametersB.Parameters[par.Key] = Math.Clamp((int)(newParam.Value - newParam.c * newParam.delta), newParam.Min_Value, newParam.Max_Value);
             }
 
             parameter_group.WriteToFile(Settings.FilePath, false);
@@ -163,7 +168,7 @@ namespace ChessEngineTuner
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
-                        "-each proto=uci tc=2+0.01 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
+                        "-each proto=uci tc=3 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };

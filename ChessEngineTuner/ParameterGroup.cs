@@ -48,28 +48,6 @@ namespace ChessEngineTuner
             return JsonSerializer.Deserialize<ParameterGroup>(jsonData, Options);
         }
 
-        public Parameter[] GetParameters()
-        {
-            List<Parameter> parameters = new List<Parameter>();
-            Type type = typeof(ParameterGroup);
-            foreach (System.Reflection.FieldInfo field in type.GetFields())
-            {
-                if (field.FieldType == typeof(Parameter))
-                {
-                    object? val = field.GetValue(this);
-                    if (val != null)
-                        parameters.Add((Parameter)val);
-                }
-            }
-
-            Parameter[] paramArray = new Parameter[parameters.Count];
-            for (int i = 0; i < parameters.Count; i++)
-            {
-                paramArray[i] = parameters[i];
-            }
-            return paramArray;
-        }
-
         public struct Parameter
         {
             public int Value;
@@ -95,9 +73,9 @@ namespace ChessEngineTuner
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
-                a = 30.0;
-                c0 = 200.0;
-                c = 200.0;
+                a = 25.0;
+                c0 = 100.0;
+                c = 100.0;
                 corr = 1.0;
             }
 
@@ -111,9 +89,9 @@ namespace ChessEngineTuner
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
-                a = 30.0;
-                c0 = 200.0;
-                c = 200.0;
+                a = 25.0;
+                c0 = 100.0;
+                c = 100.0;
                 corr = 1.0;
             }
 
