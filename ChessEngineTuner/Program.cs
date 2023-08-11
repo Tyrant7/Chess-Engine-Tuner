@@ -86,7 +86,7 @@ namespace ChessEngineTuner
                 }
 
                 Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
-                cutechess.Kill();
+                cutechess.Kill(true);
 
                 // Update main parameter group to use next time based on winner
                 ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
@@ -184,8 +184,11 @@ namespace ChessEngineTuner
             // Kill cutechess once the program exits
             AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs e) =>
             {
-                Console.WriteLine("Killing cutechess...");
-                cutechess.Kill(true);
+                if (!cutechess.HasExited)
+                {
+                    Console.WriteLine("Killing cutechess...");
+                    cutechess.Kill(true);
+                }
             };
 
             return cutechess;
