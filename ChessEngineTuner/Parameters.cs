@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ChessEngineTuner
@@ -50,15 +51,15 @@ namespace ChessEngineTuner
         {
             Parameters = new Dictionary<string, Parameter>
             {
-                { "AWWiden",        65 },
-                { "AWSize",         20 },
-                { "RFPMargin",     100 },
-                { "NMP_R",           3 },
-                { "NMPDepthCoef",    5 },
-                { "EFPMargin",     120 },
-                { "LMR_R",           3 },
-                { "LMRDepthMargin",  3 },
-                { "LMRTriedMargin",  8 },
+                { "AWWiden",        new Parameter(65) },
+                { "AWSize",         new Parameter(20) },
+                { "RFPMargin",      new Parameter(100) },
+                { "NMP_R",          new Parameter(3) },
+                { "NMPDepthCoef",   new Parameter(5) },
+                { "EFPMargin",      new Parameter(120) },
+                { "LMR_R",          new Parameter(3) },
+                { "LMRDepthMargin", new Parameter(3) },
+                { "LMRTriedMargin", new Parameter(8) },
             };
         }
 

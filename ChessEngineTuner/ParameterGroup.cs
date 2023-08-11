@@ -19,6 +19,11 @@ namespace ChessEngineTuner
             IncludeFields = true,
         };
 
+        /// <summary>
+        /// Writes this object to a .weights file in JSON notation.
+        /// </summary>
+        /// <param name="path">The full path to write to.</param>
+        /// <param name="writeRaw">If true, will only write a dictionary containing the integer values of the Parameters and not all data.</param>
         public void WriteToFile(string path, bool writeRaw = true)
         {
             // Write parameter group data in JSON format
@@ -35,6 +40,11 @@ namespace ChessEngineTuner
             File.WriteAllText(path, myJsonData);
         }
 
+        /// <summary>
+        /// Returns a ParameterGroup read from the specified file.
+        /// </summary>
+        /// <param name="path">The full path of the file to read from.</param>
+        /// <returns>A newly created ParameterGroup object</returns>
         public static ParameterGroup ReadFromFile(string path)
         {
             if (!File.Exists(path))
@@ -56,44 +66,43 @@ namespace ChessEngineTuner
         {
             foreach (var param in Parameters)
             {
-                Parameters[param.Key] = 1;
+                Parameters[param.Key].Value = 1;
             }
         }
 
-        public struct Parameter
+        public class Parameter
         {
-            public int Value;
+            public int Value { get; set; }
             public int MinDelta;
             public int MaxDelta;
-            public int CurrentDelta;
 
             public int MinValue;
             public int MaxValue;
 
-            public Parameter(int _value, int _minDelta, int _maxDelta, int _minValue, int _maxValue)
-            {
-                Value = _value;
-                MinDelta = _minDelta;
-                MaxDelta = _maxDelta;
-                CurrentDelta = 0;
+            // Required definition for deserialization
+            public Parameter() { }
 
-                MinValue = _minValue;
-                MaxValue = _maxValue;
+            public Parameter(int Value, int MinDelta, int MaxDelta, int MinValue, int MaxValue)
+            {
+                this.Value = Value;
+                this.MinDelta = MinDelta;
+                this.MaxDelta = MaxDelta;
+
+                this.MinValue = MinValue;
+                this.MaxValue = MaxValue;
             }
 
-            public Parameter(int _value)
+            public Parameter(int Value)
             {
-                Value = _value;
+                this.Value = Value;
                 MinDelta = 0;
-                MaxDelta = Math.Max(_value / 10, 1);
-                CurrentDelta = 0;
+                MaxDelta = Math.Max(Value / 10, 1);
 
                 MinValue = 1;
-                MaxValue = Math.Max(_value * 3, 10);
+                MaxValue = Math.Max(Value * 3, 10);
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;
-            public static implicit operator Parameter(int _value) => new(_value);
         }
     }
 }

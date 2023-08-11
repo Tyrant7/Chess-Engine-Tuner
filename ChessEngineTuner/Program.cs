@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace ChessEngineTuner
@@ -120,8 +121,8 @@ namespace ChessEngineTuner
                 int delta = random.Next(newParam.MinDelta, newParam.MaxDelta + 1);
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
-                parametersA.Parameters[par.Key] = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
-                parametersB.Parameters[par.Key] = Math.Clamp(newParam.Value - (delta * sign), newParam.MinValue, newParam.MaxValue);
+                parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
+                parametersB.Parameters[par.Key].Value = Math.Clamp(newParam.Value - (delta * sign), newParam.MinValue, newParam.MaxValue);
             }
 
             // Write back, one into file A and other into file B
