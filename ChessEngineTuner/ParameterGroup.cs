@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ChessEngineTuner
@@ -13,7 +14,7 @@ namespace ChessEngineTuner
         static private JsonSerializerOptions Options => new()
         {
             WriteIndented = true,
-            IncludeFields = true
+            IncludeFields = true,
         };
 
         public void WriteToFile(string path)
