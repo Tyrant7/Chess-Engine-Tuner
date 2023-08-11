@@ -39,10 +39,10 @@ namespace ChessEngineTuner
         {
             if (tuneFromScratch)
             {
-                Console.WriteLine(new String('=', 30));
+                Console.WriteLine(new string('=', 30));
                 Console.WriteLine("Warning! Tuning from scratch will reset any weights currently in your engine directory. " +
                     "Please make sure you have a backup of your weights before continuing!");
-                Console.WriteLine(new String('=', 30));
+                Console.WriteLine(new string('=', 30));
                 Console.WriteLine("Press enter to begin tuning");
                 Console.ReadLine();
             }
@@ -52,7 +52,7 @@ namespace ChessEngineTuner
             if (tuneFromScratch || !File.Exists(Settings.EvalFilePath))
             {
                 // Write an empty set of parameters to the evaluation file
-                EvaluationParameters parameters = new EvaluationParameters();
+                ParameterGroup parameters = new ParameterGroup();
                 parameters.WriteToFile(Settings.EvalFilePath);
             }
 
@@ -74,7 +74,7 @@ namespace ChessEngineTuner
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Draw");
-                        winnerFile = Settings.EvalFileName; // No prepended A or B for a draw, just use the default file
+                        winnerFile = Settings.EvalFilePath; // No prepended A or B for a draw, just use the default file
                         break;
                     case MatchResult.Cancelled:
                         Console.WriteLine("Match was cancelled. Terminating process...");
@@ -96,9 +96,8 @@ namespace ChessEngineTuner
         private static void InitializeWeights()
         {
             // Initialize our two sets of weights
-            EvaluationParameters parametersA = new(), parametersB = new();
-            parametersA.ReadFromFile(Settings.EvalFileName);
-            parametersB.ReadFromFile(Settings.EvalFileName);
+            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
+            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.EvalFilePath);
 
             // TODO: Make slight changes to each
 
@@ -125,7 +124,7 @@ namespace ChessEngineTuner
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
-                        "-each proto=uci tc=1+0.08 bookdepth=6 book=./resources/book.bin -concurrency 10 -maxmoves 80 -games 2 -rounds 5000 " +
+                        "-each proto=uci tc=1+0.08 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };
@@ -148,6 +147,7 @@ namespace ChessEngineTuner
         {
             cutechess.Start();
 
+            int gamesPlayed = 0;
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
@@ -162,11 +162,17 @@ namespace ChessEngineTuner
 
                     // Print our WDL
                     Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", tokens[5], tokens[7], tokens[9]);
+                    gamesPlayed++;
 
-                    // TODO: Actually give some real win conditions
-                    if (int.Parse(tokens[5]) >= 5)
+                    if (gamesPlayed >= 2)
                     {
-                        return MatchResult.BotAWins;
+                        int sumStats = int.Parse(tokens[5]) - int.Parse(tokens[7]);
+                        if (sumStats > 0)
+                            return MatchResult.BotAWins;
+                        else if (sumStats < 0)
+                            return MatchResult.BotBWins;
+                        else
+                            return MatchResult.Draw;
                     }
                 }
             }
