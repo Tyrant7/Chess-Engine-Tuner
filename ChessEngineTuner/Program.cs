@@ -12,11 +12,6 @@ namespace ChessEngineTuner
 
         public static void Main(string[] args)
         {
-            foreach (ParameterGroup.Parameter p in new ParameterGroup().GetParameters())
-            {
-                Console.WriteLine(p.Value);
-            }
-
             if (args.Length == 0)
             {
                 BeginTuning(Settings.DefaultMaxMatches, false);
@@ -178,6 +173,7 @@ namespace ChessEngineTuner
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
+                Console.WriteLine(line);
                 if (line.Contains("Score of BotA vs BotB: "))
                 {
                     // Array will be formatted like
