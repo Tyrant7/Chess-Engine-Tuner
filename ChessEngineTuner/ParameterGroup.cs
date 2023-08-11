@@ -61,7 +61,13 @@ namespace ChessEngineTuner
                         parameters.Add((Parameter)val);
                 }
             }
-            return parameters.ToArray();
+
+            Parameter[] paramArray = new Parameter[parameters.Count];
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                paramArray[i] = parameters[i];
+            }
+            return paramArray;
         }
 
         public struct Parameter
@@ -99,7 +105,7 @@ namespace ChessEngineTuner
             {
                 Value = _Value;
                 Temp = _Value;
-                Min_Value = -1000000;
+                Min_Value = 1;
                 Max_Value = 1000000;
                 delta = 0;
                 Progress_1 = 0.0;

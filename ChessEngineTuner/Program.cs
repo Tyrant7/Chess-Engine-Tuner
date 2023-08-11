@@ -62,19 +62,15 @@ namespace ChessEngineTuner
                 Process cutechess = CreateProcess();
                 (MatchResult result, int score) = RunMatch(cutechess);
 
-                string winnerFile = "";
                 switch (result)
                 {
                     case MatchResult.BotAWins:
                         Console.WriteLine("Bot A wins");
-                        winnerFile = Settings.FilePathA;
                         break;
                     case MatchResult.BotBWins:
-                        winnerFile = Settings.FilePathB;
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Draw");
-                        winnerFile = Settings.FilePath; // No prepended A or B for a draw, just use the default file
                         break;
                     case MatchResult.Cancelled:
                         Console.WriteLine("Match was cancelled. Terminating process...");
@@ -86,9 +82,7 @@ namespace ChessEngineTuner
                 for (int j = 0; j < p.Length; j++)
                 {
                     p[j].Value += (int)(p[j].a * score / (p[j].c * p[j].delta));
-                    p[j].Value = Math.Min(p[j].Max_Value,
-                                       Math.Max(p[j].Min_Value,
-                                                p[j].Value));
+                    p[j].Value = Math.Clamp(p[j].Value, p[j].Min_Value, p[j].Max_Value);
                 }
 
                 Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
@@ -106,7 +100,7 @@ namespace ChessEngineTuner
             ParameterGroup parametersA = new(), parametersB = new();
 
             // TODO: Make slight changes to each
-            int A = 1;
+            int A = 3;
 
             ParameterGroup.Parameter[] p = parameter_group.GetParameters();
             ParameterGroup.Parameter[] pA = parametersA.GetParameters();
@@ -126,9 +120,7 @@ namespace ChessEngineTuner
 
                     if (p[i].R > 1.0e-6 && p[i].R < 0.999999)
                     {
-                        p[i].corr = Math.Min(1.25,
-                                             Math.Max(0.8,
-                                                      -2.0 * A / (matches * Math.Log(p[i].R))));
+                        p[i].corr = Math.Clamp(-2.0 * A / (matches * Math.Log(p[i].R)), 0.8, 1.25);
                     }
                     if (p[i].R <= 1.0e-6) { p[i].corr = 0.8; }
                     if (p[i].R >= 0.999999) { p[i].corr = 1.25; }
@@ -142,12 +134,8 @@ namespace ChessEngineTuner
                 p[i].c = p[i].c0 * Math.Exp(2.0 * (match + 1) / matches) / (match + 1);
                 p[i].delta = new Random().Next(2) * 2 - 1;
 
-                pA[i].Value = Math.Min(p[i].Max_Value,
-                                       Math.Max(p[i].Min_Value,
-                                                (int)(p[i].Value + p[i].c * p[i].delta)));
-                pB[i].Value = Math.Min(p[i].Max_Value,
-                                       Math.Max(p[i].Min_Value,
-                                                (int)(p[i].Value - p[i].c * p[i].delta)));
+                pA[i].Value = Math.Clamp((int)(p[i].Value + p[i].c * p[i].delta), p[i].Min_Value, p[i].Max_Value);
+                pB[i].Value = Math.Clamp((int)(p[i].Value - p[i].c * p[i].delta), p[i].Min_Value, p[i].Max_Value);
             }
 
             parameter_group.WriteToFile(Settings.FilePath, false);
@@ -175,7 +163,7 @@ namespace ChessEngineTuner
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
-                        "-each proto=uci tc=1+0.08 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
+                        "-each proto=uci tc=2+0.01 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };
