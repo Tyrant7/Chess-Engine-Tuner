@@ -48,6 +48,22 @@ namespace ChessEngineTuner
             return JsonSerializer.Deserialize<ParameterGroup>(jsonData, Options);
         }
 
+        public Parameter[] GetParameters()
+        {
+            List<Parameter> parameters = new List<Parameter>();
+            Type type = typeof(ParameterGroup);
+            foreach (System.Reflection.FieldInfo field in type.GetFields())
+            {
+                if (field.FieldType == typeof(Parameter))
+                {
+                    object? val = field.GetValue(this);
+                    if (val != null)
+                        parameters.Add((Parameter)val);
+                }
+            }
+            return parameters.ToArray();
+        }
+
         public struct Parameter
         {
             public int Value;

@@ -204,6 +204,7 @@ namespace ChessEngineTuner
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
+                Console.WriteLine(line);
                 if (line.Contains("Score of BotA vs BotB: "))
                 {
                     // Array will be formatted like
