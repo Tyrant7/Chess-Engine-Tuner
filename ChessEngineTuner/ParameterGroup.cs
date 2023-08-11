@@ -19,11 +19,19 @@ namespace ChessEngineTuner
             IncludeFields = true,
         };
 
-        public void WriteToFile(string path)
+        public void WriteToFile(string path, bool writeRaw = true)
         {
             // Write parameter group data in JSON format
-            RawParameterGroup rawParams = new RawParameterGroup(this);
-            string myJsonData = JsonSerializer.Serialize(rawParams, Options);
+            string myJsonData;
+            if (writeRaw)
+            {
+                RawParameterGroup rawParams = new RawParameterGroup(this);
+                myJsonData = JsonSerializer.Serialize(rawParams, Options);
+            }
+            else
+            {
+                myJsonData = JsonSerializer.Serialize(this, Options);
+            }
             File.WriteAllText(path, myJsonData);
         }
 
@@ -31,7 +39,7 @@ namespace ChessEngineTuner
         {
             if (!File.Exists(path))
             {
-                Console.WriteLine("There was no file at the specified path: {0}", path);
+                Console.WriteLine("There was no file at the specified path: {0}\nCreating one now!", path);
                 return new ParameterGroup();
             }
 
