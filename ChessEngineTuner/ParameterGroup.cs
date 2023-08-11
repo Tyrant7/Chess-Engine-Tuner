@@ -45,14 +45,18 @@ namespace ChessEngineTuner
 
             // Read all data from the file and creates a new parameter group
             string jsonData = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<ParameterGroup>(jsonData, Options);
+            ParameterGroup group = JsonSerializer.Deserialize<ParameterGroup>(jsonData, Options);
+            return group;
         }
 
-        public void ZeroOutParameters()
+        /// <summary>
+        /// Set every parameter in this group to 1.
+        /// </summary>
+        public void OneOutParameters()
         {
             foreach (var param in Parameters)
             {
-                Parameters[param.Key] = 0;
+                Parameters[param.Key] = 1;
             }
         }
 
@@ -81,9 +85,9 @@ namespace ChessEngineTuner
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
-                a = 25.0;
-                c0 = 100.0;
-                c = 100.0;
+                a = Math.Clamp(_Value, 2, 30);
+                c0 = Math.Clamp(_Value * 3, 5, 200);
+                c = Math.Clamp(_Value * 3, 5, 200);
                 corr = 1.0;
             }
 
@@ -92,14 +96,14 @@ namespace ChessEngineTuner
                 Value = _Value;
                 Temp = _Value;
                 Min_Value = 1;
-                Max_Value = 1000000;
+                Max_Value = Math.Max(_Value, 3) * 3;
                 delta = 0;
                 Progress_1 = 0.0;
                 Progress_2 = 0.0;
                 R = -1.0;
-                a = 25.0;
-                c0 = 100.0;
-                c = 100.0;
+                a = Math.Clamp(_Value, 2, 30);
+                c0 = Math.Clamp(_Value * 3, 5, 200);
+                c = Math.Clamp(_Value * 3, 5, 200);
                 corr = 1.0;
             }
 

@@ -51,9 +51,9 @@ namespace ChessEngineTuner
 
             if (tuneFromScratch)
             {
-                // Write a zeroed out set of parameters to the evaluation file
+                // Write a fully one set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
-                parameters.ZeroOutParameters();
+                parameters.OneOutParameters();
                 parameters.WriteToFile(Settings.FilePath, false);
             }
             else if (!File.Exists(Settings.FilePath))
@@ -109,10 +109,12 @@ namespace ChessEngineTuner
         {
             // Initialize our two sets of weights
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
-            ParameterGroup parametersA = new(), parametersB = new();
+            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
+            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
+
 
             // Make slight changes to each
-            int A = 5000;
+            int A = 800;
 
 
             var pars = parameter_group.Parameters;
