@@ -63,48 +63,33 @@ namespace ChessEngineTuner
         public struct Parameter
         {
             public int Value;
-            public int Temp;
-            public int Min_Value;
-            public int Max_Value;
-            public int delta;
-            public double Progress_1;
-            public double Progress_2;
-            public double R;
-            public double a;
-            public double c0;
-            public double c;
-            public double corr;
+            public int MinDelta;
+            public int MaxDelta;
+            public int CurrentDelta;
 
-            public Parameter(int _Value, int _Min_Value, int _Max_Value)
+            public int MinValue;
+            public int MaxValue;
+
+            public Parameter(int _value, int _minDelta, int _maxDelta, int _minValue, int _maxValue)
             {
-                Value = _Value;
-                Temp = _Value;
-                Min_Value = _Min_Value;
-                Max_Value = _Max_Value;
-                delta = 0;
-                Progress_1 = 0.0;
-                Progress_2 = 0.0;
-                R = -1.0;
-                a = Math.Clamp(_Value, 2, 30);
-                c0 = Math.Clamp(_Value * 3, 5, 200);
-                c = Math.Clamp(_Value * 3, 5, 200);
-                corr = 1.0;
+                Value = _value;
+                MinDelta = _minDelta;
+                MaxDelta = _maxDelta;
+                CurrentDelta = 0;
+
+                MinValue = _minValue;
+                MaxValue = _maxValue;
             }
 
-            public Parameter(int _Value)
+            public Parameter(int _value)
             {
-                Value = _Value;
-                Temp = _Value;
-                Min_Value = 1;
-                Max_Value = Math.Max(_Value, 3) * 3;
-                delta = 0;
-                Progress_1 = 0.0;
-                Progress_2 = 0.0;
-                R = -1.0;
-                a = Math.Clamp(_Value, 2, 30);
-                c0 = Math.Clamp(_Value * 3, 5, 200);
-                c = Math.Clamp(_Value * 3, 5, 200);
-                corr = 1.0;
+                Value = _value;
+                MinDelta = 0;
+                MaxDelta = Math.Max(_value / 10, 1);
+                CurrentDelta = 0;
+
+                MinValue = 1;
+                MaxValue = Math.Max(_value * 3, 10);
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;

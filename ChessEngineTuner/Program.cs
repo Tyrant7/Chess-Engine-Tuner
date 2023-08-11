@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace ChessEngineTuner
 {
@@ -40,7 +41,7 @@ namespace ChessEngineTuner
             if (tuneFromScratch)
             {
                 Console.WriteLine(new string('=', 30));
-                Console.WriteLine("Warning! Tuning from scratch will reset any weights currently in your engine directory. " +
+                Console.WriteLine("Warning! Tuning from scratch will reset any weights currently in this directory. " +
                     "Please make sure you have a backup of your weights before continuing!");
                 Console.WriteLine(new string('=', 30));
                 Console.WriteLine("Press enter to begin tuning");
@@ -65,39 +66,35 @@ namespace ChessEngineTuner
 
             for (int i = 0; i < matches; i++)
             {
-                InitializeWeights(i, matches);
+                ParameterGroup botAParams, botBParams;
+                (botAParams, botBParams) = InitializeWeights();
                 Process cutechess = CreateProcess();
-                (MatchResult result, int score) = RunMatch(cutechess);
+                MatchResult result = RunMatch(cutechess);
 
+                // Update main parameter group to use next time based on winner
                 switch (result)
                 {
                     case MatchResult.BotAWins:
                         Console.WriteLine("Bot A wins");
+                        botAParams.WriteToFile(Settings.FilePath, false);
                         break;
                     case MatchResult.BotBWins:
                         Console.WriteLine("Bot B wins");
+                        botBParams.WriteToFile(Settings.FilePath, false);
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Draw");
+                        // Don't update weights if we drew the game
                         break;
                     case MatchResult.Cancelled:
                         Console.WriteLine("Match was cancelled. Terminating process...");
                         return;
                 }
 
-                Console.WriteLine("Finished match {0}, adjusting weights accordingly...", i);
+                Console.WriteLine("Finished match {0}, adjusted weights accordingly...", i);
+
+                // Kill the current process before starting another one
                 cutechess.Kill(true);
-
-                // Update main parameter group to use next time based on winner
-                ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
-                var p = parameter_group.Parameters;
-                foreach (var param in p)
-                {
-                    p[param.Key] += (int)(p[param.Key].a * score / (p[param.Key].c * p[param.Key].delta));
-                    p[param.Key] = Math.Clamp(p[param.Key].Value, p[param.Key].Min_Value, p[param.Key].Max_Value);
-                }
-                parameter_group.WriteToFile(Settings.FilePath, false);
-
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
         }
@@ -105,59 +102,33 @@ namespace ChessEngineTuner
         /// <summary>
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
-        private static void InitializeWeights(int match, int matches)
+        /// <returns>Both ParameterGroups A and B.</returns>
+        private static (ParameterGroup, ParameterGroup) InitializeWeights()
         {
             // Initialize our two sets of weights
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
 
-
-            // Make slight changes to each
-            int A = 800;
-
-
+            // Make slight changes to each parameter
             var pars = parameter_group.Parameters;
             foreach (KeyValuePair<string, ParameterGroup.Parameter> par in pars)
             {
                 ParameterGroup.Parameter newParam = pars[par.Key];
-                if (match == A)
-                {
-                    newParam.Progress_1 = Math.Abs(newParam.Value - newParam.Temp);
-                    newParam.Temp = newParam.Value;
-                }
+                Random random = new Random();
 
-                if (match > A && match % A == 0)
-                {
-                    newParam.Progress_2 = Math.Abs(newParam.Value - newParam.Temp);
-                    newParam.R = newParam.Progress_1 > 0.001 ? newParam.Progress_2 / (newParam.corr * newParam.Progress_1) : -1.0;
+                int delta = random.Next(newParam.MinDelta, newParam.MaxDelta + 1);
+                int sign = random.Next(2) == 1 ? 1 : -1;
 
-                    if (newParam.R > 1.0e-6 && newParam.R < 0.999999)
-                    {
-                        newParam.corr = Math.Clamp(-2.0 * A / (matches * Math.Log(newParam.R)), 0.8, 1.25);
-                    }
-                    if (newParam.R <= 1.0e-6) { newParam.corr = 0.8; }
-                    if (newParam.R >= 0.999999) { newParam.corr = 1.25; }
-                    if (newParam.R == -1.0) { newParam.corr = 1.0; }
-
-                    newParam.a *= newParam.corr;
-                    newParam.Progress_1 = newParam.Progress_2;
-                    newParam.Temp = newParam.Value;
-                }
-
-                newParam.c = newParam.c0 * Math.Exp(2.0 * (match + 1) / matches) / (match + 1);
-                newParam.delta = new Random().Next(2) * 2 - 1;
-
-                pars[par.Key] = newParam;
-                parametersA.Parameters[par.Key] = Math.Clamp((int)(newParam.Value + newParam.c * newParam.delta), newParam.Min_Value, newParam.Max_Value);
-                parametersB.Parameters[par.Key] = Math.Clamp((int)(newParam.Value - newParam.c * newParam.delta), newParam.Min_Value, newParam.Max_Value);
+                parametersA.Parameters[par.Key] = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
+                parametersB.Parameters[par.Key] = Math.Clamp(newParam.Value - (delta * sign), newParam.MinValue, newParam.MaxValue);
             }
-
-            parameter_group.WriteToFile(Settings.FilePath, false);
 
             // Write back, one into file A and other into file B
             parametersA.WriteToFile(Settings.FilePathA);
             parametersB.WriteToFile(Settings.FilePathB);
+
+            return (parametersA, parametersB);
         }
 
         /// <summary>
@@ -201,7 +172,7 @@ namespace ChessEngineTuner
         /// </summary>
         /// <param name="cutechess">The process to track the match of.</param>
         /// <returns>The result of the match.</returns>
-        private static (MatchResult, int) RunMatch(Process cutechess)
+        private static MatchResult RunMatch(Process cutechess)
         {
             cutechess.Start();
 
@@ -227,15 +198,15 @@ namespace ChessEngineTuner
                     {
                         int sumStats = int.Parse(tokens[5]) - int.Parse(tokens[7]);
                         if (sumStats > 0)
-                            return (MatchResult.BotAWins, sumStats);
+                            return MatchResult.BotAWins;
                         else if (sumStats < 0)
-                            return (MatchResult.BotBWins, sumStats);
+                            return MatchResult.BotBWins;
                         else
-                            return (MatchResult.Draw, sumStats);
+                            return MatchResult.Draw;
                     }
                 }
             }
-            return (MatchResult.Cancelled, 0);
+            return MatchResult.Cancelled;
         }
     }
 }
