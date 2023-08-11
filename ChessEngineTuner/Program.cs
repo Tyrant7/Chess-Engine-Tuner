@@ -75,6 +75,7 @@ namespace ChessEngineTuner
                         Console.WriteLine("Bot A wins");
                         break;
                     case MatchResult.BotBWins:
+                        Console.WriteLine("Bot B wins");
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Draw");
