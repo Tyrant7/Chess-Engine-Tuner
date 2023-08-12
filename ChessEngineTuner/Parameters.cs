@@ -31,20 +31,6 @@ namespace ChessEngineTuner
         Tempo - tentative
     */
 
-    public struct RawParameterGroup
-    {
-        public RawParameterGroup(ParameterGroup group)
-        {
-            Parameters = new Dictionary<string, int>(group.Parameters.Count);
-            foreach (KeyValuePair<string, ParameterGroup.Parameter> par in group.Parameters)
-            {
-                Parameters.Add(par.Key, par.Value.Value);
-            }
-        }
-
-        public Dictionary<string, int> Parameters;
-    }
-
     public partial struct ParameterGroup
     {
         public ParameterGroup()
