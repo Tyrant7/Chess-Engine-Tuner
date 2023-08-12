@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection.Metadata;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace ChessEngineTuner
 {
@@ -165,12 +164,12 @@ namespace ChessEngineTuner
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WorkingDirectory = Settings.EngineDirectory,
-                    FileName = "D:/Users/tyler/AppData/Local/Programs/Cute Chess/cutechess-cli.exe",
+                    FileName = "C:\\Users\\SidRo\\AppData\\Local\\Programs\\Cute Chess\\cutechess-cli.exe",
                     Arguments =
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
-                        "-each proto=uci tc=3 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
+                        "-each proto=uci tc=3 bookdepth=6 book=./resources/book.bin -concurrency 12 -maxmoves 80 -games 2 -rounds 6 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };
@@ -215,7 +214,7 @@ namespace ChessEngineTuner
                     Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", tokens[5], tokens[7], tokens[9]);
                     gamesPlayed++;
 
-                    if (gamesPlayed >= 2)
+                    if (gamesPlayed >= 12)
                     {
                         int sumStats = int.Parse(tokens[5]) - int.Parse(tokens[7]);
                         if (sumStats > 0)

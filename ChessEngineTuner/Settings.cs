@@ -12,7 +12,7 @@ namespace ChessEngineTuner
         /// The directory where your bots will get their weights written to for testing. 
         /// Important Note: Should be in the same directory as your Chess-Challenge.exe, not this directory.
         /// </summary>
-        public static readonly string EngineDirectory = "D:/Users/tyler/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0";
+        public static readonly string EngineDirectory = "C:\\Users\\SidRo\\Documents\\Random Projects\\SebLague Chess Challenge\\Chess-Challenge\\bin\\release\\net6.0";
 
         /// <summary>
         /// The name of the file containing your evaluation weights. Located in your engine directory.
