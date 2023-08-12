@@ -53,8 +53,8 @@ namespace ChessEngineTuner
             // Estimate how long tuning will take with the parameters given
             // 1.8, number of matches with a winner that will be verified against bestParameters
             // 50,  average number of moves in a bot games (estimate)
-            // 6,   time to start all processes of cutechess and ChessChallenge between games
-            int seconds = (int)Math.Round(matches * 1.8 * 6 * Settings.GameTime + (Settings.GameIncrement * 50));
+            // 5,   time to start all processes of cutechess and ChessChallenge between games
+            int seconds = (int)Math.Round(matches * 1.8 * 5 * Settings.GameTime + (Settings.GameIncrement * 50));
             TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
 
             Console.WriteLine("Starting tuning with {0} max matches...", matches);
@@ -79,6 +79,10 @@ namespace ChessEngineTuner
             {
                 Console.WriteLine("Began tuning using previously created weights.");
             }
+
+            // Tuning analytics
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int updatedBest = 0;
 
             ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
             for (int i = 0; i < matches; i++)
@@ -128,6 +132,7 @@ namespace ChessEngineTuner
 
                     bestParameters = contender;
                     bestParameters.WriteToFile(Settings.FilePath, true);
+                    updatedBest++;
                 }
                 else
                 {
@@ -137,7 +142,12 @@ namespace ChessEngineTuner
                 // Kill the current process after finished update
                 cutechess.Kill(true);
             }
-            Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
+
+            Console.WriteLine(new string('=', 30));
+            Console.WriteLine("Tuning session has concluded in {0}.", stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff"));
+            Console.WriteLine("Updated best parameters a total of {0} times.", updatedBest);
+            Console.WriteLine("Final weights can be found at " + Settings.FilePath);
+            Console.WriteLine(new string('=', 30));
         }
 
         /// <summary>
