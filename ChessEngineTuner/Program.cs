@@ -127,6 +127,8 @@ namespace ChessEngineTuner
                 // Kill the current process after finished update
                 cutechess.Kill(true);
             }
+            // Write the best parameters to file A
+            bestParameters.WriteToFile(Settings.FilePathA);
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
         }
 
@@ -149,7 +151,7 @@ namespace ChessEngineTuner
                 Random random = new Random();
 
                 // Value decreasing in magnitude towards target (gradient descent)
-                int delta = (int)Math.Ceiling((double)newParam.MaxDelta * (totalMatches - matches) / totalMatches);
+                int delta = (int)Math.Ceiling(newParam.MaxDelta * 2.0 * Math.Exp((matches + 1) / totalMatches / 2.0) / Math.Sqrt(matches + 1));
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
                 parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
@@ -181,7 +183,7 @@ namespace ChessEngineTuner
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
-                        "-each proto=uci tc=3+0.01 bookdepth=6 book=./resources/book.bin -concurrency 12 -maxmoves 80 -games 2 -rounds 6 " +
+                        "-each proto=uci tc=8+0.08 bookdepth=6 book=./resources/book.bin -concurrency 12 -maxmoves 200 -games 2 -rounds 12 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };
