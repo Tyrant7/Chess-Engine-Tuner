@@ -74,7 +74,7 @@ namespace ChessEngineTuner
             ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
             for (int i = 0; i < matches; i++)
             {
-                Console.WriteLine("Starting match {0}", i);
+                Console.WriteLine("Starting match {0} of {1}", i, matches);
                 ParameterGroup botAParams, botBParams;
                 (botAParams, botBParams) = InitializeWeights(matches, i);
                 Process cutechess = CreateProcess();
