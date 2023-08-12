@@ -49,7 +49,7 @@ namespace ChessEngineTuner
                 Console.ReadLine();
             }
 
-            Console.WriteLine("Starting tuning with {0} max matches...", matches);
+            Console.WriteLine("Starting tuning with {0} max matches...\n", matches);
 
             if (tuneFromScratch)
             {
@@ -81,6 +81,7 @@ namespace ChessEngineTuner
 
                 // Update main parameter group to use next time based on winner
                 ParameterGroup contender = new ParameterGroup();
+                Console.WriteLine();
                 switch (result)
                 {
                     case MatchResult.BotAWins:
@@ -113,14 +114,14 @@ namespace ChessEngineTuner
                 // Contender beat current best, update best weights
                 if (result == MatchResult.BotBWins)
                 {
-                    Console.WriteLine("Found new best parameters. Updating main file.");
+                    Console.WriteLine("\nFound new best parameters. Updating main file.\n");
 
                     bestParameters = contender;
                     bestParameters.WriteToFile(Settings.FilePath, true);
                 }
                 else
                 {
-                    Console.WriteLine("Did not find new best parameters. Continuing games...");
+                    Console.WriteLine("\nDid not find new best parameters. Continuing games...\n");
                 }
 
                 // Kill the current process after finished update
@@ -180,7 +181,7 @@ namespace ChessEngineTuner
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
-                        "-each proto=uci tc=3 bookdepth=6 book=./resources/book.bin -concurrency 2 -maxmoves 80 -games 2 -rounds 1 " +
+                        "-each proto=uci tc=3+0.01 bookdepth=6 book=./resources/book.bin -concurrency 8 -maxmoves 80 -games 2 -rounds 4 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };
@@ -211,7 +212,6 @@ namespace ChessEngineTuner
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
-                Console.WriteLine(line);
                 if (line.Contains("Score of BotA vs BotB: "))
                 {
                     // Array will be formatted like
@@ -225,7 +225,7 @@ namespace ChessEngineTuner
                     Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", tokens[5], tokens[7], tokens[9]);
                     gamesPlayed++;
 
-                    if (gamesPlayed >= 2)
+                    if (gamesPlayed >= 8)
                     {
                         int sumStats = int.Parse(tokens[5]) - int.Parse(tokens[7]);
                         if (sumStats > 0)
