@@ -63,6 +63,12 @@ namespace ChessEngineTuner
                 // Write a fresh set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
                 parameters.WriteToFile(Settings.FilePath, true);
+
+                Console.WriteLine("No previously created weights could be found. Initalized to default.");
+            }
+            else
+            {
+                Console.WriteLine("Began tuning using previously created weights.");
             }
 
             ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
@@ -111,6 +117,10 @@ namespace ChessEngineTuner
 
                     bestParameters = contender;
                     bestParameters.WriteToFile(Settings.FilePath, true);
+                }
+                else
+                {
+                    Console.WriteLine("Did not find new best parameters. Continuing games...");
                 }
 
                 // Kill the current process after finished update
