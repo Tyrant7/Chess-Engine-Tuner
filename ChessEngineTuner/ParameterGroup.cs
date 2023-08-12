@@ -23,12 +23,12 @@ namespace ChessEngineTuner
         /// Writes this object to a .weights file in JSON notation.
         /// </summary>
         /// <param name="path">The full path to write to.</param>
-        /// <param name="writeRaw">If true, will only write a dictionary containing the integer values of the Parameters and not all data.</param>
-        public void WriteToFile(string path, bool writeRaw = true)
+        /// <param name="writeRaw">Should we write the full Parameter data or only the weights?</param>
+        public void WriteToFile(string path, bool verbose = false)
         {
             // Write parameter group data in JSON format
             string myJsonData;
-            if (writeRaw)
+            if (!verbose)
             {
                 RawParameterGroup rawParams = new RawParameterGroup(this);
                 myJsonData = JsonSerializer.Serialize(rawParams, Options);
@@ -73,7 +73,6 @@ namespace ChessEngineTuner
         public class Parameter
         {
             public int Value { get; set; }
-            public int MinDelta;
             public int MaxDelta;
 
             public int MinValue;
@@ -82,10 +81,9 @@ namespace ChessEngineTuner
             // Required definition for deserialization
             public Parameter() { }
 
-            public Parameter(int value, int minDelta, int maxDelta, int minValue, int maxValue)
+            public Parameter(int value, int maxDelta, int minValue, int maxValue)
             {
                 Value = value;
-                MinDelta = minDelta;
                 MaxDelta = maxDelta;
 
                 MinValue = minValue;
@@ -95,8 +93,7 @@ namespace ChessEngineTuner
             public Parameter(int value)
             {
                 Value = value;
-                MinDelta = 0;
-                MaxDelta = Math.Max(value / 10, 1);
+                MaxDelta = Math.Max(value / 2, 1);
 
                 MinValue = 1;
                 MaxValue = Math.Max(value * 3, 10);

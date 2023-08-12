@@ -56,45 +56,64 @@ namespace ChessEngineTuner
                 // Write a fully one set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
                 parameters.OneOutParameters();
-                parameters.WriteToFile(Settings.FilePath, false);
+                parameters.WriteToFile(Settings.FilePath, true);
             }
             else if (!File.Exists(Settings.FilePath))
             {
                 // Write a fresh set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
-                parameters.WriteToFile(Settings.FilePath, false);
+                parameters.WriteToFile(Settings.FilePath, true);
             }
 
+            ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
             for (int i = 0; i < matches; i++)
             {
                 ParameterGroup botAParams, botBParams;
-                (botAParams, botBParams) = InitializeWeights();
+                (botAParams, botBParams) = InitializeWeights(matches, i);
                 Process cutechess = CreateProcess();
                 MatchResult result = RunMatch(cutechess);
 
                 // Update main parameter group to use next time based on winner
+                ParameterGroup contender = new ParameterGroup();
                 switch (result)
                 {
                     case MatchResult.BotAWins:
-                        Console.WriteLine("Bot A wins");
-                        botAParams.WriteToFile(Settings.FilePath, false);
+                        Console.WriteLine("Verifying bot A.");
+                        contender = botAParams;
                         break;
                     case MatchResult.BotBWins:
-                        Console.WriteLine("Bot B wins");
-                        botBParams.WriteToFile(Settings.FilePath, false);
+                        Console.WriteLine("Verifying bot B.");
+                        contender = botBParams;
                         break;
                     case MatchResult.Draw:
-                        Console.WriteLine("Draw");
-                        // Don't update weights if we drew the game
-                        break;
+                        Console.WriteLine("Match resulted in draw. Skipping verifications.");
+                        continue;
                     case MatchResult.Cancelled:
                         Console.WriteLine("Match was cancelled. Terminating process...");
                         return;
                 }
 
-                Console.WriteLine("Finished match {0}, adjusted weights accordingly...", i);
+                // Write contender for verification test
+                contender.WriteToFile(Settings.FilePathB);
 
-                // Kill the current process before starting another one
+                // Kill original process and create new one for verification of new weights
+                cutechess.Kill(true);
+                cutechess = CreateProcess();
+
+                // Write the best parameters to file A
+                bestParameters.WriteToFile(Settings.FilePathA);
+                result = RunMatch(cutechess);
+
+                // Contender beat current best, update best weights
+                if (result == MatchResult.BotBWins)
+                {
+                    Console.WriteLine("Found new best parameters. Updating main file.");
+
+                    bestParameters = contender;
+                    bestParameters.WriteToFile(Settings.FilePath, true);
+                }
+
+                // Kill the current process after finished update
                 cutechess.Kill(true);
             }
             Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
@@ -104,7 +123,7 @@ namespace ChessEngineTuner
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
         /// <returns>Both ParameterGroups A and B.</returns>
-        private static (ParameterGroup, ParameterGroup) InitializeWeights()
+        private static (ParameterGroup, ParameterGroup) InitializeWeights(int totalMatches, int matches)
         {
             // Initialize our two sets of weights
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
@@ -118,7 +137,8 @@ namespace ChessEngineTuner
                 ParameterGroup.Parameter newParam = pars[par.Key];
                 Random random = new Random();
 
-                int delta = random.Next(newParam.MinDelta, newParam.MaxDelta + 1);
+                // Value decreasing in magnitude towards target (gradient descent)
+                int delta = (int)Math.Ceiling((double)newParam.MaxDelta * (totalMatches - matches) / totalMatches);
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
                 parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
