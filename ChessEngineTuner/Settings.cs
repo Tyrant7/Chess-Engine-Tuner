@@ -9,7 +9,7 @@ namespace ChessEngineTuner
     static internal class Settings
     {
         /// <summary>
-        /// The directory where your bots will get their weights written to for testing. 
+        /// The build directory of your bots. 
         /// Important Note: Should be in the same directory as your Chess-Challenge.exe, not this directory.
         /// </summary>
         public static readonly string EngineDirectory = "C:\\Users\\SidRo\\Documents\\Random Projects\\SebLague Chess Challenge\\Chess-Challenge\\bin\\release\\net6.0";

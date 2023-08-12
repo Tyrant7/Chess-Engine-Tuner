@@ -48,7 +48,7 @@ namespace ChessEngineTuner
                 Console.ReadLine();
             }
 
-            Console.WriteLine("Starting tuning with {0} max matches...", matches);
+            Console.WriteLine("Starting tuning with {0} max matches...\n", matches);
 
             if (tuneFromScratch)
             {
@@ -62,6 +62,12 @@ namespace ChessEngineTuner
                 // Write a fresh set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
                 parameters.WriteToFile(Settings.FilePath, true);
+
+                Console.WriteLine("No previously created weights could be found. Initalized to default.");
+            }
+            else
+            {
+                Console.WriteLine("Began tuning using previously created weights.");
             }
 
             ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
@@ -74,6 +80,7 @@ namespace ChessEngineTuner
 
                 // Update main parameter group to use next time based on winner
                 ParameterGroup contender = new ParameterGroup();
+                Console.WriteLine();
                 switch (result)
                 {
                     case MatchResult.BotAWins:
@@ -106,10 +113,14 @@ namespace ChessEngineTuner
                 // Contender beat current best, update best weights
                 if (result == MatchResult.BotBWins)
                 {
-                    Console.WriteLine("Found new best parameters. Updating main file.");
+                    Console.WriteLine("\nFound new best parameters. Updating main file.\n");
 
                     bestParameters = contender;
                     bestParameters.WriteToFile(Settings.FilePath, true);
+                }
+                else
+                {
+                    Console.WriteLine("\nDid not find new best parameters. Continuing games...\n");
                 }
 
                 // Kill the current process after finished update
@@ -200,7 +211,6 @@ namespace ChessEngineTuner
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
-                Console.WriteLine(line);
                 if (line.Contains("Score of BotA vs BotB: "))
                 {
                     // Array will be formatted like
