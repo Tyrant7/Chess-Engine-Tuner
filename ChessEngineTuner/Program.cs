@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 
@@ -48,7 +49,15 @@ namespace ChessEngineTuner
                 Console.ReadLine();
             }
 
-            Console.WriteLine("Starting tuning with {0} max matches...\n", matches);
+            // Estimate how long tuning will take with the parameters given
+            // 1.8, number of matches with a winner that will be verified against bestParameters
+            // 50,  average number of moves in a bot games (estimate)
+            // 5,   time to start all processes of cutechess and ChessChallenge between games
+            int seconds = (int)Math.Round(matches * 1.8 * 5 * Settings.GameTime + (Settings.GameIncrement * 50));
+            TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
+
+            Console.WriteLine("Starting tuning with {0} max matches...", matches);
+            Console.WriteLine("Estimated time: {0}\n", tuningTime);
 
             if (tuneFromScratch)
             {
@@ -69,6 +78,10 @@ namespace ChessEngineTuner
             {
                 Console.WriteLine("Began tuning using previously created weights.");
             }
+
+            // Tuning analytics
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int updatedBest = 0;
 
             ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
             for (int i = 0; i < matches; i++)
@@ -118,6 +131,7 @@ namespace ChessEngineTuner
 
                     bestParameters = contender;
                     bestParameters.WriteToFile(Settings.FilePath, true);
+                    updatedBest++;
                 }
                 else
                 {
@@ -127,9 +141,12 @@ namespace ChessEngineTuner
                 // Kill the current process after finished update
                 cutechess.Kill(true);
             }
-            // Write the best parameters to file A
-            bestParameters.WriteToFile(Settings.FilePathA);
-            Console.WriteLine("Tuning session has concluded, you can find the results in " + Settings.FilePath);
+
+            Console.WriteLine(new string('=', 30));
+            Console.WriteLine("Tuning session has concluded in {0}.", stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff"));
+            Console.WriteLine("Updated best parameters a total of {0} times.", updatedBest);
+            Console.WriteLine("Final weights can be found at " + Settings.FilePath);
+            Console.WriteLine(new string('=', 30));
         }
 
         /// <summary>
@@ -180,11 +197,15 @@ namespace ChessEngineTuner
                     WorkingDirectory = Settings.EngineDirectory,
                     FileName = "C:\\Users\\SidRo\\AppData\\Local\\Programs\\Cute Chess\\cutechess-cli.exe",
                     Arguments =
-                        // Put your command to CuteChess here
+                        string.Format(
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
-                        "-each proto=uci tc=8+0.08 bookdepth=6 book=./resources/book.bin -concurrency 12 -maxmoves 200 -games 2 -rounds 6 " +
-                        "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
+                        "-each proto=uci tc={0}+{1} bookdepth=6 book=./resources/book.bin -concurrency {2} -maxmoves 80 -games 2 -rounds {3} " +
+                        "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
+                        Settings.GameTime,
+                        Settings.GameIncrement,
+                        Settings.GamesPerMatch,
+                        Math.Ceiling((double)Settings.GamesPerMatch / 2))
                 }
             };
 
@@ -211,6 +232,7 @@ namespace ChessEngineTuner
             cutechess.Start();
 
             int gamesPlayed = 0;
+            int gamesRemaining = Settings.GamesPerMatch;
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
@@ -223,13 +245,18 @@ namespace ChessEngineTuner
                     // Draw: 9
                     string[] tokens = line.Split(' ');
 
-                    // Print our WDL
-                    Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", tokens[5], tokens[7], tokens[9]);
-                    gamesPlayed++;
+                    int botAWins = int.Parse(tokens[5]);
+                    int botBWins = int.Parse(tokens[7]);
+                    int draws = int.Parse(tokens[9]);
 
-                    if (gamesPlayed >= 12)
+                    // Print our WDL
+                    Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", botAWins, botBWins, draws);
+
+                    gamesPlayed++;
+                    gamesRemaining--;
+                    if (gamesPlayed >= Settings.GamesPerMatch)
                     {
-                        int sumStats = int.Parse(tokens[5]) - int.Parse(tokens[7]);
+                        int sumStats = botAWins - botBWins;
                         if (sumStats > 0)
                             return MatchResult.BotAWins;
                         else if (sumStats < 0)
@@ -237,6 +264,11 @@ namespace ChessEngineTuner
                         else
                             return MatchResult.Draw;
                     }
+                    // Determine if one bot has already won due to not having enough games for a comeback
+                    else if (botAWins - botBWins > gamesRemaining)
+                        return MatchResult.BotAWins;
+                    else if (botBWins - botAWins > gamesRemaining)
+                        return MatchResult.BotBWins;
                 }
             }
             return MatchResult.Cancelled;

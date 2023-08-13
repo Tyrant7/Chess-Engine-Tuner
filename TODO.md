@@ -1,7 +1,7 @@
 ## TODO.
 
-Revise math for updating the values.
+Have delta scale logorithmically instead of linearly.
 
-Integrate tune from zero option.
+Use a value to reset delta periodically throughout tuning to scout for a better local minimum.
 
-Possible separate gradient descent mode for tuning PSTs only?
+Periodically generate backups for the Evaluation.weights file.

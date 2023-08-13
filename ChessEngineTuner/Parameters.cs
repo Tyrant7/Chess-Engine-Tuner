@@ -31,6 +31,9 @@ namespace ChessEngineTuner
         Tempo - tentative
     */
 
+    /// <summary>
+    /// Define your parameters here.
+    /// </summary>
     public partial struct ParameterGroup
     {
         public ParameterGroup()
