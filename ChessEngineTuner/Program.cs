@@ -55,6 +55,7 @@ namespace ChessEngineTuner
             // 50,  average number of moves in a bot games (estimate)
             // 5,   time to start all processes of cutechess and ChessChallenge between games
             int seconds = (int)Math.Round(matches * 1.8 * 5 * Settings.GameTime + (Settings.GameIncrement * 50));
+            seconds *= Settings.GamesPerMatch / Settings.ConcurrentGames;
             TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
 
             Console.WriteLine("Starting tuning with {0} max matches...", matches);
@@ -205,8 +206,8 @@ namespace ChessEngineTuner
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
                         Settings.GameTime,
                         Settings.GameIncrement,
-                        Settings.GamesPerMatch, 
-                        Math.Ceiling((double)Settings.GamesPerMatch / 2))
+                        Settings.ConcurrentGames, 
+                        Settings.GamesPerMatch)
                 }
             };
 
