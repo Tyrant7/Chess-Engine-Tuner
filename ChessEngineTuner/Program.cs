@@ -170,7 +170,7 @@ namespace ChessEngineTuner
                 Random random = new Random();
 
                 // Value decreasing in magnitude towards target (gradient descent)
-                int delta = (int)Math.Ceiling((double)newParam.MaxDelta * (totalMatches - matches) / totalMatches);
+                int delta = (int)Math.Ceiling(newParam.MaxDelta * 2.0 * Math.Exp((matches + 1) / totalMatches / 2.0) / Math.Sqrt(matches + 1));
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
                 parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
