@@ -237,7 +237,7 @@ namespace ChessEngineTuner
             cutechess.Start();
 
             int gamesPlayed = 0;
-            int gamesRemaining = Settings.GamesPerMatch;
+            int gamesRemaining = Settings.GamesPerMatch * 2;
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
