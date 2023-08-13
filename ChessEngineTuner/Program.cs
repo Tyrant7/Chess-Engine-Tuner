@@ -89,7 +89,7 @@ namespace ChessEngineTuner
             {
                 Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
                 ParameterGroup botAParams, botBParams;
-                (botAParams, botBParams) = InitializeWeights(matches, i);
+                (botAParams, botBParams) = InitializeWeights(i);
                 Process cutechess = CreateProcess();
                 MatchResult result = RunMatch(cutechess);
 
@@ -154,12 +154,15 @@ namespace ChessEngineTuner
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
         /// <returns>Both ParameterGroups A and B.</returns>
-        private static (ParameterGroup, ParameterGroup) InitializeWeights(int totalMatches, int matches)
+        private static (ParameterGroup, ParameterGroup) InitializeWeights(int match)
         {
             // Initialize our two sets of weights
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
+
+            int matchCycleIndex = match % Settings.CycleLength + 1;
+            int cycleIndex = match / Settings.CycleLength + 1;
 
             // Make slight changes to each parameter
             var pars = parameter_group.Parameters;
@@ -169,8 +172,11 @@ namespace ChessEngineTuner
                 Random random = new Random();
 
                 // Value decreasing in magnitude towards target (gradient descent)
-                int delta = (int)Math.Ceiling(newParam.MaxDelta * 2.0 * Math.Exp((matches + 1) / totalMatches / 2.0) / Math.Sqrt(matches + 1));
+                int delta = (int)Math.Ceiling((newParam.MaxDelta / cycleIndex) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0)) 
+                    / Math.Sqrt(matchCycleIndex) * (Settings.CycleLength - matchCycleIndex) / Settings.CycleLength);
                 int sign = random.Next(2) == 1 ? 1 : -1;
+
+                Console.WriteLine(delta);
 
                 parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
                 parametersB.Parameters[par.Key].Value = Math.Clamp(newParam.Value - (delta * sign), newParam.MinValue, newParam.MaxValue);
