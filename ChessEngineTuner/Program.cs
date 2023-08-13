@@ -202,7 +202,7 @@ namespace ChessEngineTuner
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WorkingDirectory = Settings.EngineDirectory,
-                    FileName = "D:/Users/tyler/AppData/Local/Programs/Cute Chess/cutechess-cli.exe",
+                    FileName = Settings.CutechessPath,
                     Arguments =
                         string.Format(
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
