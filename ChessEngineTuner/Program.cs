@@ -206,7 +206,7 @@ namespace ChessEngineTuner
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
                         Settings.GameTime,
                         Settings.GameIncrement,
-                        Settings.ConcurrentGames, 
+                        Settings.ConcurrentGames,
                         Settings.GamesPerMatch)
                 }
             };
