@@ -35,8 +35,8 @@ namespace ChessEngineTuner
         public static string FilePathB => Path.Combine(EngineDirectory, "B-" + FileName);
 
         public const int DefaultMaxMatches = 1000;
-        public const int GamesPerMatch = 8;
-        public const int ConcurrentGames = 4;
+        public const int GamesPerMatch = 12;
+        public const int ConcurrentGames = 12;
 
         // In seconds
         public const int GameTime = 8;
