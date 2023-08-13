@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection.Metadata;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace ChessEngineTuner
 {
@@ -169,7 +170,7 @@ namespace ChessEngineTuner
                 Random random = new Random();
 
                 // Value decreasing in magnitude towards target (gradient descent)
-                int delta = (int)Math.Ceiling(newParam.MaxDelta * 2.0 * Math.Exp((matches + 1) / totalMatches / 2.0) / Math.Sqrt(matches + 1));
+                int delta = (int)Math.Ceiling((double)newParam.MaxDelta * (totalMatches - matches) / totalMatches);
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
                 parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
@@ -196,7 +197,7 @@ namespace ChessEngineTuner
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WorkingDirectory = Settings.EngineDirectory,
-                    FileName = "C:\\Users\\SidRo\\AppData\\Local\\Programs\\Cute Chess\\cutechess-cli.exe",
+                    FileName = "D:/Users/tyler/AppData/Local/Programs/Cute Chess/cutechess-cli.exe",
                     Arguments =
                         string.Format(
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
@@ -205,7 +206,7 @@ namespace ChessEngineTuner
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
                         Settings.GameTime,
                         Settings.GameIncrement,
-                        Settings.ConcurrentGames,
+                        Settings.ConcurrentGames, 
                         Settings.GamesPerMatch)
                 }
             };
