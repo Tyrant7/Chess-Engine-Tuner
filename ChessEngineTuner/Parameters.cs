@@ -40,15 +40,14 @@ namespace ChessEngineTuner
         {
             Parameters = new Dictionary<string, Parameter>
             {
-                { "AWWiden",        new Parameter(65) },
-                { "AWSize",         new Parameter(20) },
-                { "RFPMargin",      new Parameter(100) },
-                { "NMP_R",          new Parameter(3) },
-                { "NMPDepthCoef",   new Parameter(5) },
-                { "EFPMargin",      new Parameter(120) },
-                { "LMR_R",          new Parameter(3) },
-                { "LMRDepthMargin", new Parameter(3) },
-                { "LMRTriedMargin", new Parameter(8) },
+                { "Timer Divisor",          new Parameter(  40,     10,     1,      200)    },
+                { "RFP Depth Margin",       new Parameter(  85,     50,     0,      1000)   },
+                { "NMP Reduction",          new Parameter(  3,      1,      0,      100)    },
+                { "NMP Reduction Divisor",  new Parameter(  6,      2,      1,      100)    },
+                { "Futility Depth Margin",  new Parameter(  60,     50,     0,      1000)   },
+                { "LMR Move Req",           new Parameter(  8,      10,     0,      100)    },
+                { "LMR Depth Req",          new Parameter(  3,      1,      1,      20)     },
+                { "LMR Reduction",          new Parameter(  3,      1,      1,      20)     },
             };
         }
 

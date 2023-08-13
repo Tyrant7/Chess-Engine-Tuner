@@ -12,7 +12,7 @@ namespace ChessEngineTuner
         /// The build directory of your bots. 
         /// Important Note: Should be in the same directory as your Chess-Challenge.exe, not this directory.
         /// </summary>
-        public static readonly string EngineDirectory = "D:/Users/tyler/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0";
+        public static readonly string EngineDirectory = "C:\\Users\\SidRo\\Documents\\Random Projects\\SebLague Chess Challenge\\Chess-Challenge\\bin\\release\\net6.0";
 
         /// <summary>
         /// The name of the file containing your evaluation weights. Located in your engine directory.
@@ -35,8 +35,8 @@ namespace ChessEngineTuner
         public static string FilePathB => Path.Combine(EngineDirectory, "B-" + FileName);
 
         public const int DefaultMaxMatches = 1000;
-        public const int GamesPerMatch = 8;
-        public const int ConcurrentGames = 4;
+        public const int GamesPerMatch = 12;
+        public const int ConcurrentGames = 12;
 
         // In seconds
         public const int GameTime = 8;

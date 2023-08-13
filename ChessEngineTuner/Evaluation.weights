@@ -1,0 +1,58 @@
+{
+  "Parameters": {
+    "AWWiden": {
+      "Value": 65,
+      "MaxDelta": 32,
+      "MinValue": 1,
+      "MaxValue": 195
+    },
+    "AWSize": {
+      "Value": 20,
+      "MaxDelta": 10,
+      "MinValue": 1,
+      "MaxValue": 60
+    },
+    "RFPMargin": {
+      "Value": 100,
+      "MaxDelta": 50,
+      "MinValue": 1,
+      "MaxValue": 300
+    },
+    "NMP_R": {
+      "Value": 3,
+      "MaxDelta": 1,
+      "MinValue": 1,
+      "MaxValue": 10
+    },
+    "NMPDepthCoef": {
+      "Value": 5,
+      "MaxDelta": 2,
+      "MinValue": 1,
+      "MaxValue": 15
+    },
+    "EFPMargin": {
+      "Value": 120,
+      "MaxDelta": 60,
+      "MinValue": 1,
+      "MaxValue": 360
+    },
+    "LMR_R": {
+      "Value": 3,
+      "MaxDelta": 1,
+      "MinValue": 1,
+      "MaxValue": 10
+    },
+    "LMRDepthMargin": {
+      "Value": 3,
+      "MaxDelta": 1,
+      "MinValue": 1,
+      "MaxValue": 10
+    },
+    "LMRTriedMargin": {
+      "Value": 8,
+      "MaxDelta": 4,
+      "MinValue": 1,
+      "MaxValue": 24
+    }
+  }
+}
