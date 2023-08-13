@@ -73,7 +73,7 @@ namespace ChessEngineTuner
             ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
             for (int i = 0; i < matches; i++)
             {
-                Console.WriteLine("Starting match {0} of {1}", i, matches);
+                Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
                 ParameterGroup botAParams, botBParams;
                 (botAParams, botBParams) = InitializeWeights(matches, i);
                 Process cutechess = CreateProcess();
@@ -183,7 +183,7 @@ namespace ChessEngineTuner
                         // Put your command to CuteChess here
                         "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
                         "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
-                        "-each proto=uci tc=8+0.08 bookdepth=6 book=./resources/book.bin -concurrency 12 -maxmoves 200 -games 2 -rounds 12 " +
+                        "-each proto=uci tc=8+0.08 bookdepth=6 book=./resources/book.bin -concurrency 12 -maxmoves 200 -games 2 -rounds 6 " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05"
                 }
             };

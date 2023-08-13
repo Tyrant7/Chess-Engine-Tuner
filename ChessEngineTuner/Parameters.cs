@@ -44,7 +44,7 @@ namespace ChessEngineTuner
                 { "Futility Depth Margin",  new Parameter(  60,     50,     0,      1000)   },
                 { "LMR Move Req",           new Parameter(  8,      10,     0,      100)    },
                 { "LMR Depth Req",          new Parameter(  3,      1,      1,      20)     },
-                { "LMR Reduction",          new Parameter(  3,      1,      0,      20)     },
+                { "LMR Reduction",          new Parameter(  3,      1,      1,      20)     },
             };
         }
 
