@@ -259,7 +259,7 @@ namespace ChessEngineTuner
 
                     gamesPlayed++;
                     gamesRemaining--;
-                    if (gamesPlayed >= Settings.GamesPerMatch)
+                    if (gamesPlayed >= Settings.GamesPerMatch * 2)
                     {
                         int sumStats = botAWins - botBWins;
                         if (sumStats > 0)
