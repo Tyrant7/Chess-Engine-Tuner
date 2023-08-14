@@ -100,7 +100,7 @@ namespace ChessEngineTuner
                 Console.WriteLine();
                 if (result == 0)
                 {
-                    Console.WriteLine("Match resulted in draw. Skipping verifications.");
+                    Console.WriteLine("Match resulted in draw. Skipping updates.");
                     continue;
                 }
 
