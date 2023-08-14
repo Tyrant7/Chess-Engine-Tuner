@@ -111,7 +111,7 @@ namespace ChessEngineTuner
                 // Shift best parameters' raw values slightly towards the winning parameters
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
-                    param.Value.RawValue += deltas[param.Key] / (5 / ((double)Settings.GamesPerMatch / result));
+                    param.Value.RawValue += deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
                 bestParameters.WriteToFile(Settings.FilePath, true);
             }
 
