@@ -66,7 +66,7 @@ namespace ChessEngineTuner
         {
             foreach (var param in Parameters)
             {
-                Parameters[param.Key].Value = 1;
+                Parameters[param.Key].RawValue = 1;
             }
         }
 
@@ -86,7 +86,7 @@ namespace ChessEngineTuner
 
         public class Parameter
         {
-            public int Value => (int)Math.Ceiling(RawValue);
+            public int Value => (int)Math.Floor(RawValue);
             public double RawValue;
 
             public int MaxDelta;

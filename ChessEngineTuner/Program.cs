@@ -96,11 +96,11 @@ namespace ChessEngineTuner
                 switch (result)
                 {
                     case MatchResult.BotAWins:
-                        Console.WriteLine("Verifying bot A.");
+                        Console.WriteLine("Adjusting parameters based on Bot A's.");
                         // Do nothing; bot A deltas are the default
                         break;
                     case MatchResult.BotBWins:
-                        Console.WriteLine("Verifying bot B.");
+                        Console.WriteLine("Adjusting parameters based on Bot B's.");
                         // Negate the deltas
                         foreach (var key in deltas.Keys)
                             deltas[key] = -deltas[key];
