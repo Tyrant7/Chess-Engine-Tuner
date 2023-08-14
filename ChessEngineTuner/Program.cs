@@ -90,17 +90,15 @@ namespace ChessEngineTuner
                 Process cutechess = CreateProcess();
                 (int result, bool cancelled) = RunMatch(cutechess);
 
+                Console.WriteLine();
                 if (cancelled)
                 {
                     Console.WriteLine("Match was cancelled. Terminating process...");
                     return;
                 }
-
-                // Update main parameter group to use next time based on winner
-                Console.WriteLine();
-                if (result == 0)
+                else if (result == 0)
                 {
-                    Console.WriteLine("Match resulted in draw. Skipping updates.");
+                    Console.WriteLine("Match resulted in draw. Skipping adjustments.");
                     continue;
                 }
 
@@ -149,7 +147,7 @@ namespace ChessEngineTuner
                 Random random = new Random();
 
                 // Value decreasing in magnitude towards target (gradient descent)
-                double delta = (newParam.MaxDelta / cycleIndex) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0)) 
+                double delta = (newParam.MaxDelta / Math.Clamp(cycleIndex, 1, 8)) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0)) 
                     / Math.Sqrt(matchCycleIndex) * (Settings.CycleLength - matchCycleIndex) / Settings.CycleLength;
 
                 // Random positive or negative
