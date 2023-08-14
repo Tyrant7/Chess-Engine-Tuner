@@ -113,6 +113,8 @@ namespace ChessEngineTuner
                 foreach (var param in bestParameters.Parameters)
                     param.Value.RawValue += deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
                 bestParameters.WriteToFile(Settings.FilePath, true);
+
+                Console.WriteLine("Finished match. Adjusting weights according to winner...");
             }
 
             Console.WriteLine(new string('=', 30));
