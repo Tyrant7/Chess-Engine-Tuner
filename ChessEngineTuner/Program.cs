@@ -89,28 +89,20 @@ namespace ChessEngineTuner
                 Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
                 Dictionary<string, double> deltas = InitializeWeights(i);
                 Process cutechess = CreateProcess();
-                MatchResult result = RunMatch(cutechess);
+                (int result, bool cancelled) = RunMatch(cutechess);
+
+                if (cancelled)
+                {
+                    Console.WriteLine("Match was cancelled. Terminating process...");
+                    return;
+                }
 
                 // Update main parameter group to use next time based on winner
                 Console.WriteLine();
-                switch (result)
+                if (result == 0)
                 {
-                    case MatchResult.BotAWins:
-                        Console.WriteLine("Adjusting parameters based on Bot A's.");
-                        // Do nothing; bot A deltas are the default
-                        break;
-                    case MatchResult.BotBWins:
-                        Console.WriteLine("Adjusting parameters based on Bot B's.");
-                        // Negate the deltas
-                        foreach (var key in deltas.Keys)
-                            deltas[key] = -deltas[key];
-                        break;
-                    case MatchResult.Draw:
-                        Console.WriteLine("Match resulted in draw. Skipping verifications.");
-                        continue;
-                    case MatchResult.Cancelled:
-                        Console.WriteLine("Match was cancelled. Terminating process...");
-                        return;
+                    Console.WriteLine("Match resulted in draw. Skipping verifications.");
+                    continue;
                 }
 
                 // Kill the current process after finished update
@@ -119,7 +111,7 @@ namespace ChessEngineTuner
                 // Shift best parameters' raw values slightly towards the winning parameters
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
-                    param.Value.RawValue += deltas[param.Key] / 5;
+                    param.Value.RawValue += deltas[param.Key] / (5 / ((double)Settings.GamesPerMatch / result));
                 bestParameters.WriteToFile(Settings.FilePath, true);
             }
 
@@ -214,8 +206,8 @@ namespace ChessEngineTuner
         /// Tracks a match between bots started in a cutechess process created by CreateProcess.
         /// </summary>
         /// <param name="cutechess">The process to track the match of.</param>
-        /// <returns>The result of the match.</returns>
-        private static MatchResult RunMatch(Process cutechess)
+        /// <returns>The result of the match. + for bot A wins and - for bot B wins.</returns>
+        private static (int, bool) RunMatch(Process cutechess)
         {
             cutechess.Start();
 
@@ -244,22 +236,11 @@ namespace ChessEngineTuner
                     gamesRemaining--;
                     if (gamesPlayed >= Settings.GamesPerMatch * 2)
                     {
-                        int sumStats = botAWins - botBWins;
-                        if (sumStats > 0)
-                            return MatchResult.BotAWins;
-                        else if (sumStats < 0)
-                            return MatchResult.BotBWins;
-                        else
-                            return MatchResult.Draw;
+                        return (botAWins - botBWins, false);
                     }
-                    // Determine if one bot has already won due to not having enough games for a comeback
-                    else if (botAWins - botBWins > gamesRemaining)
-                        return MatchResult.BotAWins;
-                    else if (botBWins - botAWins > gamesRemaining)
-                        return MatchResult.BotBWins;
                 }
             }
-            return MatchResult.Cancelled;
+            return (0, true);
         }
     }
 }
