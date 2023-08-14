@@ -110,7 +110,7 @@ namespace ChessEngineTuner
                 // Shift best parameters' raw values slightly towards the winning parameters
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
-                    param.Value.RawValue += deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 8;
+                    param.Value.SetRawValue(param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 8);
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
@@ -152,8 +152,8 @@ namespace ChessEngineTuner
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
                 deltas.Add(par.Key, delta);
-                parametersA.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + (delta * sign), newParam.MinValue, newParam.MaxValue);
-                parametersB.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue - (delta * sign), newParam.MinValue, newParam.MaxValue);
+                parametersA.Parameters[par.Key].SetRawValue(Math.Clamp(newParam.RawValue + (delta * sign), newParam.MinValue, newParam.MaxValue));
+                parametersB.Parameters[par.Key].SetRawValue(Math.Clamp(newParam.RawValue - (delta * sign), newParam.MinValue, newParam.MaxValue));
             }
 
             // Write back, one into file A and other into file B

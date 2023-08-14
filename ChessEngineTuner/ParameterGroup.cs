@@ -84,9 +84,12 @@ namespace ChessEngineTuner
             public Dictionary<string, int> Parameters;
         }
 
+        [Serializable]
         public class Parameter
         {
+            [JsonIgnore]
             public int Value => (int)Math.Round(RawValue);
+
             public double RawValue;
 
             public int MaxDelta;
@@ -113,6 +116,12 @@ namespace ChessEngineTuner
 
                 MinValue = 1;
                 MaxValue = Math.Max(value * 3, 10);
+            }
+
+            // TODO: Sort this shit out
+            public void SetRawValue(double newValue)
+            {
+                RawValue = Math.Clamp(newValue, MinValue, MaxValue);
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;
