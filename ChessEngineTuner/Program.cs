@@ -84,27 +84,26 @@ namespace ChessEngineTuner
             Stopwatch stopwatch = Stopwatch.StartNew();
             int updatedBest = 0;
 
-            ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
             for (int i = 0; i < matches; i++)
             {
                 Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
-                ParameterGroup botAParams, botBParams;
-                (botAParams, botBParams) = InitializeWeights(i);
+                Dictionary<string, double> deltas = InitializeWeights(i);
                 Process cutechess = CreateProcess();
                 MatchResult result = RunMatch(cutechess);
 
                 // Update main parameter group to use next time based on winner
-                ParameterGroup contender = new ParameterGroup();
                 Console.WriteLine();
                 switch (result)
                 {
                     case MatchResult.BotAWins:
                         Console.WriteLine("Verifying bot A.");
-                        contender = botAParams;
+                        // Do nothing; bot A deltas are the default
                         break;
                     case MatchResult.BotBWins:
                         Console.WriteLine("Verifying bot B.");
-                        contender = botBParams;
+                        // Negate the deltas
+                        foreach (var key in deltas.Keys)
+                            deltas[key] = -deltas[key];
                         break;
                     case MatchResult.Draw:
                         Console.WriteLine("Match resulted in draw. Skipping verifications.");
@@ -114,33 +113,14 @@ namespace ChessEngineTuner
                         return;
                 }
 
-                // Write contender for verification test
-                contender.WriteToFile(Settings.FilePathB);
-
-                // Kill original process and create new one for verification of new weights
-                cutechess.Kill(true);
-                cutechess = CreateProcess();
-
-                // Write the best parameters to file A
-                bestParameters.WriteToFile(Settings.FilePathA);
-                result = RunMatch(cutechess);
-
-                // Contender beat current best, update best weights
-                if (result == MatchResult.BotBWins)
-                {
-                    Console.WriteLine("\nFound new best parameters. Updating main file.\n");
-
-                    bestParameters = contender;
-                    bestParameters.WriteToFile(Settings.FilePath, true);
-                    updatedBest++;
-                }
-                else
-                {
-                    Console.WriteLine("\nDid not find new best parameters. Continuing games...\n");
-                }
-
                 // Kill the current process after finished update
                 cutechess.Kill(true);
+
+                // Shift best parameters' raw values slightly towards the winning parameters
+                ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
+                foreach (var param in bestParameters.Parameters)
+                    param.Value.RawValue += deltas[param.Key] / 5;
+                bestParameters.WriteToFile(Settings.FilePath, true);
             }
 
             Console.WriteLine(new string('=', 30));
@@ -153,13 +133,15 @@ namespace ChessEngineTuner
         /// <summary>
         /// Copies the weights files into separate A and B files with slight adjustments for testing.
         /// </summary>
-        /// <returns>Both ParameterGroups A and B.</returns>
-        private static (ParameterGroup, ParameterGroup) InitializeWeights(int match)
+        /// <returns>The deltas for bot A's new parameters. Negate for bot B.</returns>
+        private static Dictionary<string, double> InitializeWeights(int match)
         {
             // Initialize our two sets of weights
             ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
             ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
+
+            Dictionary<string, double> deltas = new();
 
             int matchCycleIndex = match % Settings.CycleLength + 1;
             int cycleIndex = match / Settings.CycleLength + 1;
@@ -172,19 +154,20 @@ namespace ChessEngineTuner
                 Random random = new Random();
 
                 // Value decreasing in magnitude towards target (gradient descent)
-                int delta = (int)Math.Ceiling((newParam.MaxDelta / cycleIndex) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0)) 
-                    / Math.Sqrt(matchCycleIndex) * (Settings.CycleLength - matchCycleIndex) / Settings.CycleLength);
+                double delta = (newParam.MaxDelta / cycleIndex) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0)) 
+                    / Math.Sqrt(matchCycleIndex) * (Settings.CycleLength - matchCycleIndex) / Settings.CycleLength;
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
-                parametersA.Parameters[par.Key].Value = Math.Clamp(newParam.Value + (delta * sign), newParam.MinValue, newParam.MaxValue);
-                parametersB.Parameters[par.Key].Value = Math.Clamp(newParam.Value - (delta * sign), newParam.MinValue, newParam.MaxValue);
+                deltas.Add(par.Key, delta);
+                parametersA.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + (delta * sign), newParam.MinValue, newParam.MaxValue);
+                parametersB.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue - (delta * sign), newParam.MinValue, newParam.MaxValue);
             }
 
             // Write back, one into file A and other into file B
             parametersA.WriteToFile(Settings.FilePathA);
             parametersB.WriteToFile(Settings.FilePathB);
 
-            return (parametersA, parametersB);
+            return deltas;
         }
 
         /// <summary>

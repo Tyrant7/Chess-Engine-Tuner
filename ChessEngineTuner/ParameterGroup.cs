@@ -86,7 +86,9 @@ namespace ChessEngineTuner
 
         public class Parameter
         {
-            public int Value { get; set; }
+            public int Value => (int)Math.Ceiling(RawValue);
+            public double RawValue;
+
             public int MaxDelta;
 
             public int MinValue;
@@ -97,7 +99,7 @@ namespace ChessEngineTuner
 
             public Parameter(int value, int maxDelta, int minValue, int maxValue)
             {
-                Value = value;
+                RawValue = value;
                 MaxDelta = maxDelta;
 
                 MinValue = minValue;
@@ -106,7 +108,7 @@ namespace ChessEngineTuner
 
             public Parameter(int value)
             {
-                Value = value;
+                RawValue = value;
                 MaxDelta = Math.Max(value / 2, 1);
 
                 MinValue = 1;
