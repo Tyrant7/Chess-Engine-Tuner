@@ -86,7 +86,7 @@ namespace ChessEngineTuner
 
         public class Parameter
         {
-            public int Value => (int)Math.Floor(RawValue);
+            public int Value => (int)Math.Round(RawValue);
             public double RawValue;
 
             public int MaxDelta;
