@@ -89,7 +89,7 @@ namespace ChessEngineTuner
         {
             [JsonIgnore]
             // TODO: Just have this return the clamped raw value and don't care if raw value goes negative
-            public int Value => (int)Math.Round(RawValue);
+            public int Value => (int)Math.Clamp(Math.Round(RawValue), MinValue, MaxValue);
 
             public double RawValue;
 
@@ -117,12 +117,6 @@ namespace ChessEngineTuner
 
                 MinValue = 1;
                 MaxValue = Math.Max(value * 3, 10);
-            }
-
-            // TODO: Sort this shit out
-            public void SetRawValue(double newValue)
-            {
-                RawValue = Math.Clamp(newValue, MinValue, MaxValue);
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;

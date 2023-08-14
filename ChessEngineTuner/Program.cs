@@ -52,7 +52,7 @@ namespace ChessEngineTuner
             // Estimate how long tuning will take with the parameters given
             // 60,  average number of moves in a bot games (estimate)
             // 1.6,   time to start all processes of cutechess and ChessChallenge between games
-            int seconds = (int)Math.Round(matches * 1.6 * (Settings.GameTime * 2 + (Settings.GameIncrement * 100)));
+            int seconds = (int)Math.Round(matches * 1.6 * (Settings.GameTime * 2 + (Settings.GameIncrement * 120)));
             seconds = (int)(seconds * ((double)Settings.GamesPerMatch / Settings.ConcurrentGames));
             TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
 
@@ -110,7 +110,7 @@ namespace ChessEngineTuner
                 // Shift best parameters' raw values slightly towards the winning parameters
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
-                    param.Value.SetRawValue(param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 8);
+                    param.Value.RawValue = param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
@@ -152,8 +152,8 @@ namespace ChessEngineTuner
                 int sign = random.Next(2) == 1 ? 1 : -1;
 
                 deltas.Add(par.Key, delta);
-                parametersA.Parameters[par.Key].SetRawValue(Math.Clamp(newParam.RawValue + (delta * sign), newParam.MinValue, newParam.MaxValue));
-                parametersB.Parameters[par.Key].SetRawValue(Math.Clamp(newParam.RawValue - (delta * sign), newParam.MinValue, newParam.MaxValue));
+                parametersA.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + (delta * sign), newParam.MinValue, newParam.MaxValue);
+                parametersB.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue - (delta * sign), newParam.MinValue, newParam.MaxValue);
             }
 
             // Write back, one into file A and other into file B
