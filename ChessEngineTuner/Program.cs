@@ -52,8 +52,8 @@ namespace ChessEngineTuner
             // Estimate how long tuning will take with the parameters given
             // 1.8, number of matches with a winner that will be verified against bestParameters
             // 50,  average number of moves in a bot games (estimate)
-            // 1.5,   time to start all processes of cutechess and ChessChallenge between games
-            int seconds = (int)Math.Round(matches * 1.8 * 1.5 * (Settings.GameTime * 2 + (Settings.GameIncrement * 50)));
+            // 1.6,   time to start all processes of cutechess and ChessChallenge between games
+            int seconds = (int)Math.Round(matches * 1.8 * 1.6 * (Settings.GameTime * 2 + (Settings.GameIncrement * 50)));
             seconds *= Settings.GamesPerMatch * 2 / Settings.ConcurrentGames;
             TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
 
