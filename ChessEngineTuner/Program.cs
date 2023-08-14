@@ -52,7 +52,7 @@ namespace ChessEngineTuner
             // Estimate how long tuning will take with the parameters given
             // 60,  average number of moves in a bot games (estimate)
             // 1.6,   time to start all processes of cutechess and ChessChallenge between games
-            int seconds = (int)Math.Round(matches * 1.6 * (Settings.GameTime * 2 + (Settings.GameIncrement * 60)));
+            int seconds = (int)Math.Round(matches * 1.6 * (Settings.GameTime * 2 + (Settings.GameIncrement * 100)));
             seconds = (int)(seconds * ((double)Settings.GamesPerMatch / Settings.ConcurrentGames));
             TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
 
@@ -110,7 +110,7 @@ namespace ChessEngineTuner
                 // Shift best parameters' raw values slightly towards the winning parameters
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
-                    param.Value.RawValue += deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
+                    param.Value.RawValue += deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 8;
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
