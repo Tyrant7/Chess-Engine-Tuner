@@ -259,9 +259,6 @@ namespace ChessEngineTuner
                         .ToArray())
                         .Split(' ');
 
-                    foreach (string token in tokens)
-                        Console.WriteLine(token);
-
                     // Figure out which 2 of our bots were playing and the score of the game
                     int botA = int.Parse(tokens[3].Replace("Bot", ""));
                     int botB = int.Parse(tokens[5].Replace("Bot", ""));
