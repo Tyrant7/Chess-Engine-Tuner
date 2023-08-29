@@ -263,8 +263,8 @@ namespace ChessEngineTuner
                         Console.WriteLine(token);
 
                     // Figure out which 2 of our bots were playing and the score of the game
-                    int botA = int.Parse(tokens[3].Replace("bot", ""));
-                    int botB = int.Parse(tokens[5].Replace("bot", ""));
+                    int botA = int.Parse(tokens[3].Replace("Bot", ""));
+                    int botB = int.Parse(tokens[5].Replace("Bot", ""));
 
                     int score = tokens[6] == "1-0" ? 1 :
                                 tokens[6] == "0-1" ? -1 :
