@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Reflection.Metadata;
 
 namespace ChessEngineTuner
 {
@@ -51,8 +50,8 @@ namespace ChessEngineTuner
 
             // Estimate how long tuning will take with the parameters given
             // 60,  average number of moves in a bot games (estimate)
-            // 1.3,   time to start all processes of cutechess and ChessChallenge between games
-            int seconds = (int)Math.Round(matches * 1.3 * (Settings.GameTime * 2 + (Settings.GameIncrement * 120)));
+            // 1.1,   time to start all processes of cutechess and ChessChallenge between games and margin of error
+            int seconds = (int)Math.Round(matches * 1.1 * (Settings.GameTime * 2 + (Settings.GameIncrement * 120)));
             seconds = (int)(seconds * ((double)Settings.GamesPerMatch * 2 / Settings.ConcurrentGames));
             TimeSpan tuningTime = TimeSpan.FromSeconds(seconds);
 
@@ -81,12 +80,10 @@ namespace ChessEngineTuner
 
             // Tuning analytics
             Stopwatch stopwatch = Stopwatch.StartNew();
-            int updatedBest = 0;
-
             for (int i = 0; i < matches; i++)
             {
                 Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
-                Dictionary<string, double> deltas = InitializeWeights(i);
+                InitializeWeights(i);
                 Process cutechess = CreateProcess();
                 (int result, bool cancelled) = RunMatch(cutechess);
 
@@ -109,7 +106,8 @@ namespace ChessEngineTuner
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
                 {
-                    param.Value.RawValue = param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
+                    // double change = deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
+                    // param.Value.RawValue = param.Value.RawValue + change;
                 }
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
@@ -118,51 +116,46 @@ namespace ChessEngineTuner
 
             Console.WriteLine(new string('=', 30));
             Console.WriteLine("Tuning session has concluded in {0}.", stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff"));
-            Console.WriteLine("Updated best parameters a total of {0} times.", updatedBest);
             Console.WriteLine("Final weights can be found at " + Settings.FilePath);
             Console.WriteLine(new string('=', 30));
         }
 
         /// <summary>
-        /// Copies the weights files into separate A and B files with slight adjustments for testing.
+        /// Copies the weights files into separate files with slight adjustments for testing.
         /// </summary>
-        /// <returns>The deltas for bot A's new parameters. Negate for bot B.</returns>
-        private static Dictionary<string, double> InitializeWeights(int match)
+        private static void InitializeWeights(int match)
         {
-            // Initialize our two sets of weights
-            ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
-            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
-            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
-
-            Dictionary<string, double> deltas = new();
-
-            int matchCycleIndex = match % Settings.CycleLength + 1;
-            int cycleIndex = match / Settings.CycleLength + 1;
-
-            // Make slight changes to each parameter
-            var pars = parameter_group.Parameters;
-            foreach (KeyValuePair<string, ParameterGroup.Parameter> par in pars)
+            // Initialize our sets of weights for each bot
+            for (int i = 0; i < Settings.BotsPerMatch; i++)
             {
-                ParameterGroup.Parameter newParam = pars[par.Key];
-                Random random = new Random();
+                ParameterGroup newParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
 
-                // Value decreasing in magnitude towards target (gradient descent)
-                double delta = (newParam.MaxDelta / Math.Clamp(cycleIndex, 1, 8)) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0)) 
-                    / Math.Sqrt(matchCycleIndex) * (Settings.CycleLength - matchCycleIndex) / Settings.CycleLength;
+                Dictionary<string, double> deltas = new();
 
-                // Random positive or negative
-                delta *= random.Next(2) == 1 ? 1 : -1;
+                int matchCycleIndex = match % Settings.CycleLength + 1;
+                int cycleIndex = match / Settings.CycleLength + 1;
 
-                deltas.Add(par.Key, delta);
-                parametersA.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + delta, newParam.MinValue, newParam.MaxValue);
-                parametersB.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue - delta, newParam.MinValue, newParam.MaxValue);
+                // Make slight changes to each parameter
+                var pars = newParameters.Parameters;
+                foreach (KeyValuePair<string, ParameterGroup.Parameter> par in pars)
+                {
+                    ParameterGroup.Parameter newParam = pars[par.Key];
+                    Random random = new Random();
+
+                    // Value decreasing in magnitude towards target (gradient descent)
+                    double delta = (newParam.MaxDelta / Math.Clamp(cycleIndex, 1, 8)) * Math.Exp(matchCycleIndex / (Settings.CycleLength * 2.0))
+                        / Math.Sqrt(matchCycleIndex) * (Settings.CycleLength - matchCycleIndex) / Settings.CycleLength;
+
+                    // Random positive or negative
+                    delta *= random.Next(2) == 1 ? 1 : -1;
+
+                    deltas.Add(par.Key, delta);
+                    newParameters.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + delta, newParam.MinValue, newParam.MaxValue);
+                }
+
+                // Write back parameters into each file
+                newParameters.WriteToFile(Settings.GetFilePath(i));
             }
-
-            // Write back, one into file A and other into file B
-            parametersA.WriteToFile(Settings.FilePathA);
-            parametersB.WriteToFile(Settings.FilePathB);
-
-            return deltas;
         }
 
         /// <summary>
@@ -171,6 +164,15 @@ namespace ChessEngineTuner
         /// <returns>A reference to the process.</returns>
         private static Process CreateProcess()
         {
+            string Engine(int ID) => string.Format("-engine name=\"Bot{0}\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot tune {0}\" ", ID);
+            string GetEngines()
+            {
+                string output = string.Empty;
+                for (int i = 0; i < Settings.BotsPerMatch; i++)
+                    output += Engine(i);
+                return output;
+            }
+
             Process cutechess = new Process()
             {
                 StartInfo = new ProcessStartInfo
@@ -181,10 +183,9 @@ namespace ChessEngineTuner
                     FileName = Settings.CutechessPath,
                     Arguments =
                         string.Format(
-                        "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
-                        "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
+                        GetEngines() +
                         "-each proto=uci tc={0}+{1} bookdepth=6 book=./resources/book.bin -concurrency {2} -maxmoves 80 -games 2 -rounds {3} " +
-                        "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
+                        "-ratinginterval 10 -pgnout games.pgn",
                         Settings.GameTime,
                         Settings.GameIncrement,
                         Settings.ConcurrentGames,
@@ -219,14 +220,24 @@ namespace ChessEngineTuner
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
-                if (line.Contains("Score of BotA vs BotB: "))
+                if (line.Contains("Finished game "))
                 {
                     // Array will be formatted like
-                    // Junk: 0-4
-                    // BotA: 5
-                    // BotB: 7
-                    // Draw: 9
-                    string[] tokens = line.Split(' ');
+                    // Junk:  0-2, 4
+                    // BotA:  3
+                    // BotB:  5
+                    // Score: 6
+                    // Tidy up our input
+                    string[] tokens = new string(line
+                        .ToCharArray()
+                        .Where(c => !char.IsPunctuation(c) || c == '-')
+                        .ToArray())
+                        .Split(' ');
+
+                    foreach (string token in tokens)
+                        Console.WriteLine(token);
+
+                    /*
 
                     int botAWins = int.Parse(tokens[5]);
                     int botBWins = int.Parse(tokens[7]);
@@ -241,8 +252,11 @@ namespace ChessEngineTuner
                     {
                         return (botAWins - botBWins, false);
                     }
+                    */
                 }
             }
+            Console.WriteLine("End");
+
             return (0, true);
         }
     }

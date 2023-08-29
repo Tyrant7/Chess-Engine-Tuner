@@ -12,7 +12,7 @@ namespace ChessEngineTuner
         /// The build directory of your bots. 
         /// Important Note: Should be in the same directory as your Chess-Challenge.exe, not this directory.
         /// </summary>
-        public static readonly string EngineDirectory = "D:/Users/tyler/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0";
+        public static readonly string EngineDirectory = "D:/Users/tyler/Chess-Challenge/Chess-Challenge/bin/Release/net6.0";
 
         /// <summary>
         /// The path of your Cutechess-cli.exe file.
@@ -31,16 +31,14 @@ namespace ChessEngineTuner
         public static string FilePath => Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
         /// <summary>
-        /// The file path for Bot A. Uses the engine directory.
+        /// The file path for bot weight files. Uses the engine directory.
         /// </summary>
-        public static string FilePathA => Path.Combine(EngineDirectory, "A-" + FileName);
-        /// <summary>
-        /// The file path for Bot A. Uses the engine directory.
-        /// </summary>
-        public static string FilePathB => Path.Combine(EngineDirectory, "B-" + FileName);
+        public static string GetFilePath(int botID)
+            => Path.Combine(EngineDirectory, botID.ToString() + "-" + FileName);
 
         public const int DefaultMaxMatches = 1000;
-        public const int GamesPerMatch = 1; // Played by each side
+        public const int BotsPerMatch = 12;
+        public const int GamesPerMatch = 12;
         public const int ConcurrentGames = 2; // Ideally twice the value of GamesPerMatch
         public const int CycleLength = 30; // The length of a cycle for delta
 

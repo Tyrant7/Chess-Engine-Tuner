@@ -88,7 +88,6 @@ namespace ChessEngineTuner
         public class Parameter
         {
             [JsonIgnore]
-            // TODO: Just have this return the clamped raw value and don't care if raw value goes negative
             public int Value => (int)Math.Clamp(Math.Round(RawValue), MinValue, MaxValue);
 
             public double RawValue;

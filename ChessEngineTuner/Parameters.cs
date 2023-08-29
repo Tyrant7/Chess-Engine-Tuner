@@ -43,14 +43,15 @@ namespace ChessEngineTuner
                 { "AWWiden",        new Parameter(65) },
                 { "AWSize",         new Parameter(20) },
                 { "RFPDepthMargin", new Parameter(8) },
-                { "RFPMargin",      new Parameter(100) },
+                { "RFPMargin",      new Parameter(95) },
+                { "NMPDepthMargin", new Parameter(2) },
                 { "NMP_R",          new Parameter(3) },
                 { "NMPDepthCoef",   new Parameter(5) },
                 { "EFPDepthMargin", new Parameter(8) },
                 { "EFPMargin",      new Parameter(120) },
                 { "LMR_R",          new Parameter(3) },
-                { "LMRDepthMargin", new Parameter(3) },
-                { "LMRTriedMargin", new Parameter(8) },
+                { "LMRDepthMargin", new Parameter(2) },
+                { "LMRTriedMargin", new Parameter(6) },
             };
         }
 
