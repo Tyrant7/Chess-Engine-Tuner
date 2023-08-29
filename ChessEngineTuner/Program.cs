@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace ChessEngineTuner
 {
@@ -83,7 +84,7 @@ namespace ChessEngineTuner
             for (int i = 0; i < matches; i++)
             {
                 Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
-                InitializeWeights(i);
+                Dictionary<string, double>[] allDeltas = InitializeWeights(i);
                 Process cutechess = CreateProcess();
                 (Scoreboard results, bool cancelled) = RunMatch(cutechess);
 
@@ -97,13 +98,25 @@ namespace ChessEngineTuner
                 // Kill the current process after finished update
                 cutechess.Kill(true);
 
-                // Shift best parameters' raw values slightly towards the winning parameters
+                // Figure out who won
+                int winner = results.GetWinner();
+                Dictionary<string, double> winnerDeltas = allDeltas[winner];
+
+                // Copy over the winner's parameters to become the new best parameters
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
+                foreach (var param in bestParameters.Parameters)
+                {
+                    param.Value.RawValue += winnerDeltas[param.Key];
+                }
+
+                // Nudge weights towards the winner's
+                /*
                 foreach (var param in bestParameters.Parameters)
                 {
                     // double change = deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
                     // param.Value.RawValue = param.Value.RawValue + change;
                 }
+                */
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
@@ -118,20 +131,35 @@ namespace ChessEngineTuner
         /// <summary>
         /// Copies the weights files into separate files with slight adjustments for testing.
         /// </summary>
-        private static void InitializeWeights(int match)
+        /// <returns>A dictionary of deltas for each bot.</returns>
+        private static Dictionary<string, double>[] InitializeWeights(int match)
         {
             // Initialize our sets of weights for each bot
-            for (int i = 0; i < Settings.BotsPerMatch; i++)
-            {
-                ParameterGroup newParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
+            Dictionary<string, double>[] allDeltas = new Dictionary<string, double>[Settings.BotsPerMatch];
 
-                Dictionary<string, double> deltas = new();
+            // Always add the parent as the fist bot
+            Dictionary<string, double> parentDeltas = new();
+            ParameterGroup parentParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
+            foreach (KeyValuePair<string, ParameterGroup.Parameter> par in parentParameters.Parameters)
+            {
+                parentDeltas.Add(par.Key, 0);
+            }
+            parentParameters.WriteToFile(Settings.GetFilePath(0));
+            allDeltas[0] = parentDeltas;
+
+            // Add the remaining bots with random changes made to each set of weights
+            for (int i = 1; i < Settings.BotsPerMatch; i++)
+            {
+                // Setup parameters to read from
+                ParameterGroup newParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
 
                 int matchCycleIndex = match % Settings.CycleLength + 1;
                 int cycleIndex = match / Settings.CycleLength + 1;
 
-                // Make slight changes to each parameter
                 var pars = newParameters.Parameters;
+
+                // Make slight changes to each parameter
+                Dictionary<string, double> deltas = new();
                 foreach (KeyValuePair<string, ParameterGroup.Parameter> par in pars)
                 {
                     ParameterGroup.Parameter newParam = pars[par.Key];
@@ -150,7 +178,9 @@ namespace ChessEngineTuner
 
                 // Write back parameters into each file
                 newParameters.WriteToFile(Settings.GetFilePath(i));
+                allDeltas[i] = deltas;
             }
+            return allDeltas;
         }
 
         /// <summary>

@@ -8,10 +8,10 @@ namespace ChessEngineTuner
 {
     internal class Scoreboard
     {
-        public readonly int[] Scores;
+        private readonly int[] Scores;
 
         public Scoreboard(int bots) 
-        { 
+        {
             Scores = new int[bots];
         }
 
@@ -19,6 +19,11 @@ namespace ChessEngineTuner
         {
             Scores[a] += result;
             Scores[b] -= result;
+        }
+
+        public int GetWinner()
+        {
+            return Scores.ToList().IndexOf(Scores.Max());
         }
 
         public void Print()

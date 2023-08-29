@@ -75,7 +75,7 @@ namespace ChessEngineTuner
             public RawParameterGroup(ParameterGroup group)
             {
                 Parameters = new Dictionary<string, int>(group.Parameters.Count);
-                foreach (KeyValuePair<string, ParameterGroup.Parameter> par in group.Parameters)
+                foreach (KeyValuePair<string, Parameter> par in group.Parameters)
                 {
                     Parameters.Add(par.Key, par.Value.Value);
                 }
