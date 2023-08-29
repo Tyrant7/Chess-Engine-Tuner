@@ -85,18 +85,13 @@ namespace ChessEngineTuner
                 Console.WriteLine("Starting match {0} of {1}", i + 1, matches);
                 InitializeWeights(i);
                 Process cutechess = CreateProcess();
-                (int result, bool cancelled) = RunMatch(cutechess);
+                (Scoreboard results, bool cancelled) = RunMatch(cutechess);
 
                 Console.WriteLine();
                 if (cancelled)
                 {
                     Console.WriteLine("Match was cancelled. Terminating process...");
                     return;
-                }
-                else if (result == 0)
-                {
-                    Console.WriteLine("Match resulted in draw. Skipping adjustments.");
-                    continue;
                 }
 
                 // Kill the current process after finished update
@@ -211,19 +206,19 @@ namespace ChessEngineTuner
         /// </summary>
         /// <param name="cutechess">The process to track the match of.</param>
         /// <returns>The result of the match. + for bot A wins and - for bot B wins.</returns>
-        private static (int, bool) RunMatch(Process cutechess)
+        private static (Scoreboard, bool) RunMatch(Process cutechess)
         {
             cutechess.Start();
+            Scoreboard scoreboard = new Scoreboard(Settings.BotsPerMatch);
 
             int gamesPlayed = 0;
-            int gamesRemaining = Settings.GamesPerMatch * 2;
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
                 if (line.Contains("Finished game "))
                 {
                     // Array will be formatted like
-                    // Junk:  0-2, 4
+                    // Junk:  0-2, 4, 7+
                     // BotA:  3
                     // BotB:  5
                     // Score: 6
@@ -237,27 +232,29 @@ namespace ChessEngineTuner
                     foreach (string token in tokens)
                         Console.WriteLine(token);
 
-                    /*
+                    // Figure out which 2 of our bots were playing and the score of the game
+                    int botA = int.Parse(tokens[3].Replace("bot", ""));
+                    int botB = int.Parse(tokens[5].Replace("bot", ""));
 
-                    int botAWins = int.Parse(tokens[5]);
-                    int botBWins = int.Parse(tokens[7]);
-                    int draws = int.Parse(tokens[9]);
+                    int score = tokens[6] == "1-0" ? 1 :
+                                tokens[6] == "0-1" ? -1 :
+                                0;
 
-                    // Print our WDL
-                    Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", botAWins, botBWins, draws);
+                    // Update the scoreboard with the new scores
+                    scoreboard.UpdateScores(botA, botB, score);
 
                     gamesPlayed++;
-                    gamesRemaining--;
                     if (gamesPlayed >= Settings.GamesPerMatch * 2)
                     {
-                        return (botAWins - botBWins, false);
+                        // Print our scoreboard before we exit
+                        scoreboard.Print();
+                        return (scoreboard, false);
                     }
-                    */
                 }
             }
             Console.WriteLine("End");
 
-            return (0, true);
+            return (scoreboard, true);
         }
     }
 }

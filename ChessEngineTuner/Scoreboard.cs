@@ -15,10 +15,15 @@ namespace ChessEngineTuner
             Scores = new int[bots];
         }
 
-        public void ScoreMatch(int a, int b, int result)
+        public void UpdateScores(int a, int b, int result)
         {
             Scores[a] += result;
             Scores[b] -= result;
+        }
+
+        public void Print()
+        {
+
         }
     }
 }
