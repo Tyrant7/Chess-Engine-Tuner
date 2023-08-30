@@ -38,11 +38,11 @@ namespace ChessEngineTuner
 
         public const int DefaultMaxMatches = 1000;
         public const int BotsPerMatch = 4;
-        public const int GamesPerMatch = 8;
+        public const int GamesPerMatch = 12;
         public const int ConcurrentGames = 6; // Ideally twice the value of GamesPerMatch
 
         // In seconds
-        public const int GameTime = 1;
-        public const double GameIncrement = 0.01;
+        public const int GameTime = 8;
+        public const double GameIncrement = 0.08;
     }
 }

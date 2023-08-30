@@ -50,7 +50,7 @@ namespace ChessEngineTuner
             }
 
             // Estimate how long tuning will take with the parameters given
-            // 60,  average number of moves in a bot games (estimate)
+            // 120,   average number of moves in a bot games (estimate)
             // 1.1,   time to start all processes of cutechess and ChessChallenge between games and margin of error
             int seconds = (int)Math.Round(matches * 1.1 * (Settings.GameTime * 2 + (Settings.GameIncrement * 120)));
             seconds = (int)(seconds * ((double)Settings.GamesPerMatch * 2 / Settings.ConcurrentGames));
