@@ -37,10 +37,9 @@ namespace ChessEngineTuner
             => Path.Combine(EngineDirectory, botID.ToString() + "-" + FileName);
 
         public const int DefaultMaxMatches = 1000;
-        public const int BotsPerMatch = 8;
-        public const int GamesPerMatch = 12;
+        public const int BotsPerMatch = 4;
+        public const int GamesPerMatch = 8;
         public const int ConcurrentGames = 6; // Ideally twice the value of GamesPerMatch
-        public const int CycleLength = 30; // The length of a cycle for delta
 
         // In seconds
         public const int GameTime = 8;

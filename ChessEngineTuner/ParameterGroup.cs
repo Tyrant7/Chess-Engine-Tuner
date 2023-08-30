@@ -91,6 +91,7 @@ namespace ChessEngineTuner
             public int Value => (int)Math.Clamp(Math.Round(RawValue), MinValue, MaxValue);
 
             public double RawValue;
+            public double Momentum;
 
             public int MaxDelta;
 
@@ -107,6 +108,8 @@ namespace ChessEngineTuner
 
                 MinValue = minValue;
                 MaxValue = maxValue;
+
+                Momentum = 1;
             }
 
             public Parameter(int value)
@@ -116,6 +119,8 @@ namespace ChessEngineTuner
 
                 MinValue = 1;
                 MaxValue = Math.Max(value * 3, 10);
+
+                Momentum = 1;
             }
 
             public static implicit operator int(Parameter parameter) => parameter.Value;
