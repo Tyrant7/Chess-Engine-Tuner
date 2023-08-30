@@ -112,8 +112,8 @@ namespace ChessEngineTuner
                 // in this case we do not want to update it
                 if (winningDelta != 0)
                 {
-                    newParam.Momentum *= Math.Abs(winningDelta) / newParam.MaxDelta * 2;
-                    newParam.Momentum = Math.Clamp(newParam.Momentum, 0.05, 1.5);
+                    newParam.Momentum *= Math.Abs(winningDelta) / newParam.MaxDelta;
+                    newParam.Momentum = Math.Clamp(newParam.Momentum, 0.05, 1);
                 }
 
                 // Update the value and write to file
