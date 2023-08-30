@@ -42,7 +42,7 @@ namespace ChessEngineTuner
         public const int ConcurrentGames = 6; // Ideally twice the value of GamesPerMatch
 
         // In seconds
-        public const int GameTime = 8;
-        public const double GameIncrement = 0.08;
+        public const int GameTime = 1;
+        public const double GameIncrement = 0.01;
     }
 }

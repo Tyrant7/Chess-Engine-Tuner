@@ -107,17 +107,19 @@ namespace ChessEngineTuner
                 ParameterGroup.Parameter newParam = bestParameters.Parameters[changedParam];
 
                 // Calculate the new momentum
-                newParam.Momentum = Math.Abs(Math.Clamp(winningDelta / newParam.MaxDelta, 0, newParam.MaxDelta / 2));
-
-                // Keep momentum away from zero
-                if (Math.Abs(newParam.Momentum) <= 0.01)
-                    newParam.Momentum = winningDelta < 0 ? -0.01 : 0.01;
+                // Note:
+                // delta will only be 0 when we are on the edge of our bounds to avoid immediately scaling down to minimum momentum when tuning from scratch or near our limits,
+                // in this case we do not want to update it
+                if (winningDelta != 0)
+                    newParam.Momentum = Math.Clamp(Math.Abs(winningDelta) / newParam.MaxDelta, 0.05, newParam.MaxDelta);
 
                 // Update the value and write to file
-                newParam.RawValue = winningDelta;
+                newParam.RawValue += winningDelta;
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
+                Console.WriteLine("Adjusted parameter {0} from {1:0.00} to {2:0.00}, with a delta of {3:0.00}", 
+                    changedParam, newParam.RawValue - winningDelta, newParam.RawValue, winningDelta);
             }
 
             Console.WriteLine(new string('=', 30));
