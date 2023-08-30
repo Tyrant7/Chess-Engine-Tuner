@@ -127,7 +127,7 @@ namespace ChessEngineTuner
                 int settledParams = 0;
                 foreach (ParameterGroup.Parameter par in bestParameters.Parameters.Values)
                 {
-                    if (par.Momentum == Settings.MinMomentum)
+                    if (Math.Round(par.Momentum, 6) <= Settings.MinMomentum)
                         settledParams++;
                 }
                 
@@ -160,7 +160,7 @@ namespace ChessEngineTuner
             string key = group.Parameters.ElementAt(parameterIndex).Key;
             ParameterGroup.Parameter par = group.Parameters[key];
 
-            Console.WriteLine(key);
+            Console.WriteLine("Tuning parameter: {0}", key);
 
             // Initialize each parameter inside of a range
             for (int i = 0; i < Settings.BotsPerMatch; i++)
