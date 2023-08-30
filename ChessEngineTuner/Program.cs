@@ -106,15 +106,8 @@ namespace ChessEngineTuner
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 ParameterGroup.Parameter newParam = bestParameters.Parameters[changedParam];
 
-                // Calculate the new momentum
-                // Note:
-                // delta will only be 0 when we are on the edge of our bounds to avoid immediately scaling down to minimum momentum when tuning from scratch or near our limits,
-                // in this case we do not want to update it
-                if (winningDelta != 0)
-                {
-                    newParam.Momentum *= Math.Abs(winningDelta) / newParam.MaxDelta;
-                    newParam.Momentum = Math.Clamp(newParam.Momentum, Settings.MinMomentum, 1);
-                }
+                // Decay the learning rate linearly towards 0
+                newParam.Decay -= 1 / matches;
 
                 // Update the value and write to file
                 newParam.RawValue += winningDelta;
@@ -127,7 +120,7 @@ namespace ChessEngineTuner
                 int settledParams = 0;
                 foreach (ParameterGroup.Parameter par in bestParameters.Parameters.Values)
                 {
-                    if (Math.Round(par.Momentum, 6) <= Settings.MinMomentum)
+                    if (par.Decay <= 0)
                         settledParams++;
                 }
                 
@@ -167,7 +160,7 @@ namespace ChessEngineTuner
             {
                 // Even distribution between -MaxDelta and MaxDelta, clamped between min and max value for each parameter
                 double delta = -par.MaxDelta + 2 * (double)par.MaxDelta / (Settings.BotsPerMatch - 1) * i;
-                delta *= par.Momentum;
+                delta *= par.Decay;
                 delta = Math.Clamp(delta, par.MinValue - par.RawValue, par.MaxValue - par.RawValue);
 
                 par.RawValue += delta;

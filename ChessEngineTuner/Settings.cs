@@ -41,8 +41,6 @@ namespace ChessEngineTuner
         public const int GamesPerMatch = 30;
         public const int ConcurrentGames = 6; // Ideally twice the value of GamesPerMatch
 
-        public const double MinMomentum = 0.03;
-
         // In seconds
         public const int GameTime = 1;
         public const double GameIncrement = 0.01;
