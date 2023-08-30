@@ -111,7 +111,10 @@ namespace ChessEngineTuner
                 // delta will only be 0 when we are on the edge of our bounds to avoid immediately scaling down to minimum momentum when tuning from scratch or near our limits,
                 // in this case we do not want to update it
                 if (winningDelta != 0)
-                    newParam.Momentum = Math.Clamp(Math.Abs(winningDelta) / newParam.MaxDelta, 0.05, newParam.MaxDelta);
+                {
+                    newParam.Momentum *= Math.Abs(winningDelta) / newParam.MaxDelta * 2;
+                    newParam.Momentum = Math.Clamp(newParam.Momentum, 0.05, 2);
+                }
 
                 // Update the value and write to file
                 newParam.RawValue += winningDelta;
@@ -256,8 +259,6 @@ namespace ChessEngineTuner
                     }
                 }
             }
-            Console.WriteLine("End");
-
             return (scoreboard, true);
         }
     }
