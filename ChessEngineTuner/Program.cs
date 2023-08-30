@@ -29,7 +29,7 @@ namespace ChessEngineTuner
             }
             else
             {
-                Console.WriteLine("Improper format. Please use 'maxmatches { 1000 } [fromscratch]'");
+                Console.WriteLine("Improper format. Please use 'maxmatches { 0 } [fromscratch]'", Settings.DefaultMaxMatches);
             }
         }
 
@@ -63,7 +63,7 @@ namespace ChessEngineTuner
             {
                 // Write a fully one set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
-                parameters.OneOutParameters();
+                parameters.RandomizeParameters();
                 parameters.WriteToFile(Settings.FilePath, true);
             }
             else if (!File.Exists(Settings.FilePath))
@@ -113,7 +113,7 @@ namespace ChessEngineTuner
                 if (winningDelta != 0)
                 {
                     newParam.Momentum *= Math.Abs(winningDelta) / newParam.MaxDelta;
-                    newParam.Momentum = Math.Clamp(newParam.Momentum, 0.05, 1);
+                    newParam.Momentum = Math.Clamp(newParam.Momentum, Settings.MinMomentum, 1);
                 }
 
                 // Update the value and write to file
@@ -123,6 +123,19 @@ namespace ChessEngineTuner
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
                 Console.WriteLine("Adjusted parameter {0} from {1:0.00} to {2:0.00}, with a delta of {3:0.00}", 
                     changedParam, newParam.RawValue - winningDelta, newParam.RawValue, winningDelta);
+
+                int settledParams = 0;
+                foreach (ParameterGroup.Parameter par in bestParameters.Parameters.Values)
+                {
+                    if (par.Momentum == Settings.MinMomentum)
+                        settledParams++;
+                }
+                
+                if (settledParams == bestParameters.Parameters.Count)
+                {
+                    Console.WriteLine("All parameters have settled. Concluding tests.");
+                    break;
+                }
             }
 
             Console.WriteLine(new string('=', 30));
@@ -147,13 +160,17 @@ namespace ChessEngineTuner
             string key = group.Parameters.ElementAt(parameterIndex).Key;
             ParameterGroup.Parameter par = group.Parameters[key];
 
+            Console.WriteLine(key);
+
             // Initialize each parameter inside of a range
             for (int i = 0; i < Settings.BotsPerMatch; i++)
             {
                 // Even distribution between -MaxDelta and MaxDelta, clamped between min and max value for each parameter
                 double delta = -par.MaxDelta + 2 * (double)par.MaxDelta / (Settings.BotsPerMatch - 1) * i;
+                delta *= par.Momentum;
                 delta = Math.Clamp(delta, par.MinValue - par.RawValue, par.MaxValue - par.RawValue);
-                par.RawValue += delta * par.Momentum;
+
+                par.RawValue += delta;
 
                 // Write back parameters into each file
                 group.WriteToFile(Settings.GetFilePath(i));
