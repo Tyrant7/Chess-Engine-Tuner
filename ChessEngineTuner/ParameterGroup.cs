@@ -60,13 +60,14 @@ namespace ChessEngineTuner
         }
 
         /// <summary>
-        /// Set every parameter in this group to 1.
+        /// Set every parameter in this group to a random value between its min and max.
         /// </summary>
-        public void OneOutParameters()
+        public void RandomizeParameters()
         {
+            Random rand = new Random();
             foreach (var param in Parameters)
             {
-                Parameters[param.Key].RawValue = 1;
+                Parameters[param.Key].RawValue = rand.Next(param.Value.MinValue, param.Value.MaxValue);
             }
         }
 
