@@ -159,6 +159,9 @@ namespace ChessEngineTuner
             // Write back our new parameters
             parametersNew.WriteToFile(Settings.GetFilePath(0));
 
+            // Get the current best parameters and set that as our opponent
+            ParameterGroup.ReadFromFile(Settings.FilePath).WriteToFile(Settings.GetFilePath(1));
+
             return deltas;
         }
 
@@ -178,8 +181,8 @@ namespace ChessEngineTuner
                     FileName = Settings.CutechessPath,
                     Arguments =
                         string.Format(
-                        "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
-                        "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci MyBot\" " +
+                        "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot tune 0\" " +
+                        "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot tune 1\" " +
                         "-each proto=uci tc={0}+{1} bookdepth=6 book=./resources/book.bin -concurrency {2} -maxmoves 80 -games 2 -rounds {3} " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
                         Settings.GameTime,
@@ -212,13 +215,9 @@ namespace ChessEngineTuner
             cutechess.Start();
 
             int gamesPlayed = 0;
-            int gamesRemaining = Settings.GamesPerMatch * 2;
             while (!cutechess.StandardOutput.EndOfStream)
             {
                 string line = cutechess.StandardOutput.ReadLine() ?? string.Empty;
-
-                Console.WriteLine(line);
-
                 if (line.Contains("Score of BotA vs BotB: "))
                 {
                     // Array will be formatted like
@@ -236,7 +235,6 @@ namespace ChessEngineTuner
                     Console.WriteLine("BotA: {0}, BotB: {1}, Draws: {2}", botAWins, botBWins, draws);
 
                     gamesPlayed++;
-                    gamesRemaining--;
                     if (gamesPlayed >= Settings.GamesPerMatch * 2)
                     {
                         return (botAWins - botBWins, false);
