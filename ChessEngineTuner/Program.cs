@@ -63,7 +63,7 @@ namespace ChessEngineTuner
             {
                 // Write a fully one set of parameters to the evaluation file
                 ParameterGroup parameters = new ParameterGroup();
-                parameters.OneOutParameters();
+                parameters.RandomizeParameters();
                 parameters.WriteToFile(Settings.FilePath, true);
             }
             else if (!File.Exists(Settings.FilePath))
