@@ -31,14 +31,19 @@ namespace ChessEngineTuner
         public static string FilePath => Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
         /// <summary>
+        /// The past of the file to write all of our CSV data to
+        /// </summary>
+        public static string CSVFilePath => Path.Combine(Directory.GetCurrentDirectory(), "Debug.csv");
+
+        /// <summary>
         /// The file path for bot weight files. Uses the engine directory.
         /// </summary>
         public static string GetFilePath(int botID)
             => Path.Combine(EngineDirectory, botID.ToString() + "-" + FileName);
 
         public const int DefaultMaxMatches = 1000;
-        public const int BotsPerMatch = 6;
-        public const int GamesPerMatch = 30;
+        public const int BotsPerMatch = 5;
+        public const int GamesPerMatch = 20;
         public const int ConcurrentGames = 6; // Ideally twice the value of GamesPerMatch
 
         public const double MinMomentum = 0.03;

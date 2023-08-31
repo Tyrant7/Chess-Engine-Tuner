@@ -113,8 +113,13 @@ namespace ChessEngineTuner
                 if (winningDelta != 0)
                 {
                     newParam.Momentum *= Math.Abs(winningDelta) / newParam.MaxDelta;
-                    newParam.Momentum = Math.Clamp(newParam.Momentum, Settings.MinMomentum, 1);
                 }
+                else
+                {
+                    // If delta was zero, just decay momentum
+                    newParam.Momentum *= 0.98;
+                }
+                newParam.Momentum = Math.Clamp(newParam.Momentum, Settings.MinMomentum, 1);
 
                 // Update the value and write to file
                 newParam.RawValue += winningDelta;
@@ -123,6 +128,8 @@ namespace ChessEngineTuner
                 Console.WriteLine("Finished match. Adjusting weights according to winner...");
                 Console.WriteLine("Adjusted parameter {0} from {1:0.00} to {2:0.00}, with a delta of {3:0.00}", 
                     changedParam, newParam.RawValue - winningDelta, newParam.RawValue, winningDelta);
+
+                CSVWriter.WriteToFile(bestParameters.Parameters, Settings.CSVFilePath);
 
                 int settledParams = 0;
                 foreach (ParameterGroup.Parameter par in bestParameters.Parameters.Values)
