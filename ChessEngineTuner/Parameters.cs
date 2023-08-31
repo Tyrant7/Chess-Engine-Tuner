@@ -12,15 +12,22 @@ namespace ChessEngineTuner
     Search:
 
         Time coefficient - tentative
+
         Aspiration window widening size
         Aspiration window size
-        RFP margin
+        RFP depth margin
+        RFP score margin
+        NMP depth margin
         NMP R value
         NMP depth coefficient
-        EFP margin
+        EFP depth margin
+        EFP score margin
+
         LMR depth margin
-        LMR moves tried margin
-        LMR R value
+        LMR tried margin
+        LMR base R value
+        LMR tried coefficient
+        LMR depth coefficient
         
 
     Eval:
@@ -40,17 +47,21 @@ namespace ChessEngineTuner
         {
             Parameters = new Dictionary<string, Parameter>
             {
-                { "AWWiden",        new Parameter(65) },
-                { "AWSize",         new Parameter(20) },
-                { "RFPDepthMargin", new Parameter(8) },
-                { "RFPMargin",      new Parameter(100) },
+                { "AWWiden",        new Parameter(62) },
+                { "AWSize",         new Parameter(17) },
+                { "RFPDepthMargin", new Parameter(10) },
+                { "RFPScoreMargin", new Parameter(96) },
+                { "NMPDepthMargin", new Parameter(2) },
                 { "NMP_R",          new Parameter(3) },
-                { "NMPDepthCoef",   new Parameter(5) },
+                { "NMPDepthCoef",   new Parameter(4) },
                 { "EFPDepthMargin", new Parameter(8) },
-                { "EFPMargin",      new Parameter(120) },
-                { "LMR_R",          new Parameter(3) },
-                { "LMRDepthMargin", new Parameter(3) },
-                { "LMRTriedMargin", new Parameter(8) },
+                { "EFPScoreMargin", new Parameter(141) },
+
+                { "LMRTriedMargin", new Parameter(6) },
+                { "LMRDepthMargin", new Parameter(2) },
+                { "LMR_R",          new Parameter(1) },
+                { "LMRTriedCoef",   new Parameter(13) },
+                { "LMRDepthCoef",   new Parameter(9) },
             };
         }
 
