@@ -109,7 +109,8 @@ namespace ChessEngineTuner
                 ParameterGroup bestParameters = ParameterGroup.ReadFromFile(Settings.FilePath);
                 foreach (var param in bestParameters.Parameters)
                 {
-                    param.Value.RawValue = param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
+                    // Nudge towards new parameters if they were better, otherwise nudge away
+                    param.Value.RawValue = param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / -result) / 4;
                 }
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
@@ -129,18 +130,16 @@ namespace ChessEngineTuner
         /// <returns>The deltas for bot A's new parameters. Negate for bot B.</returns>
         private static Dictionary<string, double> InitializeWeights(int match)
         {
-            // Initialize our two sets of weights
-            ParameterGroup parameter_group = ParameterGroup.ReadFromFile(Settings.FilePath);
-            ParameterGroup parametersA = ParameterGroup.ReadFromFile(Settings.FilePath);
-            ParameterGroup parametersB = ParameterGroup.ReadFromFile(Settings.FilePath);
+            // Initialize our new set of weights
+            ParameterGroup parametersNew = ParameterGroup.ReadFromFile(Settings.FilePath);
 
             Dictionary<string, double> deltas = new();
 
             int matchCycleIndex = match % Settings.CycleLength + 1;
             int cycleIndex = match / Settings.CycleLength + 1;
 
-            // Make slight changes to each parameter
-            var pars = parameter_group.Parameters;
+            // Make slight changes to each parameter according to our guesses
+            var pars = parametersNew.Parameters;
             foreach (KeyValuePair<string, ParameterGroup.Parameter> par in pars)
             {
                 ParameterGroup.Parameter newParam = pars[par.Key];
@@ -154,13 +153,12 @@ namespace ChessEngineTuner
                 delta *= random.Next(2) == 1 ? 1 : -1;
 
                 deltas.Add(par.Key, delta);
-                parametersA.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + delta, newParam.MinValue, newParam.MaxValue);
-                parametersB.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue - delta, newParam.MinValue, newParam.MaxValue);
+                parametersNew.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + delta, newParam.MinValue, newParam.MaxValue);
             }
 
-            // Write back, one into file A and other into file B
-            parametersA.WriteToFile(Settings.FilePathA);
-            parametersB.WriteToFile(Settings.FilePathB);
+            // Write back, our initial guesses into file A and our new parameters into file B
+            new ParameterGroup().WriteToFile(Settings.FilePathA);
+            parametersNew.WriteToFile(Settings.FilePathB);
 
             return deltas;
         }
