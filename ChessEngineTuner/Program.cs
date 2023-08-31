@@ -110,7 +110,7 @@ namespace ChessEngineTuner
                 foreach (var param in bestParameters.Parameters)
                 {
                     // Nudge towards new parameters if they were better, otherwise nudge away
-                    param.Value.RawValue = param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / -result) / 4;
+                    param.Value.RawValue = param.Value.RawValue + deltas[param.Key] / ((double)Settings.GamesPerMatch * 2 / result) / 4;
                 }
                 bestParameters.WriteToFile(Settings.FilePath, true);
 
@@ -156,9 +156,8 @@ namespace ChessEngineTuner
                 parametersNew.Parameters[par.Key].RawValue = Math.Clamp(newParam.RawValue + delta, newParam.MinValue, newParam.MaxValue);
             }
 
-            // Write back, our initial guesses into file A and our new parameters into file B
-            new ParameterGroup().WriteToFile(Settings.FilePathA);
-            parametersNew.WriteToFile(Settings.FilePathB);
+            // Write back our new parameters
+            parametersNew.WriteToFile(Settings.GetFilePath(0));
 
             return deltas;
         }
@@ -179,8 +178,8 @@ namespace ChessEngineTuner
                     FileName = Settings.CutechessPath,
                     Arguments =
                         string.Format(
-                        "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotA\" " +
-                        "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBotB\" " +
+                        "-engine name=\"BotA\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci TunedBot\" " +
+                        "-engine name=\"BotB\" cmd=\"./Chess-Challenge.exe\" arg=\"cutechess uci MyBot\" " +
                         "-each proto=uci tc={0}+{1} bookdepth=6 book=./resources/book.bin -concurrency {2} -maxmoves 80 -games 2 -rounds {3} " +
                         "-ratinginterval 10 -pgnout games.pgn -sprt elo0=0 elo1=0 alpha=0.05 beta=0.05",
                         Settings.GameTime,
